@@ -176,9 +176,9 @@
         }
       },
       "none_meaning": "No negative severity is generated from this classification, regardless of impact level.",
-      "depends_on": "criteria[*].impact, which is TBD for all 51 criteria -- see ambiguity log."
+      "depends_on": "criteria[*].impact, which is fully assigned for all 51 criteria (EverCompass v1.0 final methodology decisions)."
     },
-    "note": "Design Spec section 11. Severity is derived from classification x criterion impact (see derivation_rule), never from raw score alone -- resolved, no longer TBD. Not yet computable end-to-end until criteria[*].impact is filled in."
+    "note": "Design Spec section 11. Severity is derived from classification x criterion impact (see derivation_rule), never from raw score alone. criteria[*].impact is fully assigned for all 51 criteria, so severity is computable end-to-end from this definition."
   },
   "finding_model": {
     "types": [
@@ -237,7 +237,7 @@
       "not_applicable_result": null,
       "opportunity_note": "The 'opportunity' finding type is never produced by this mapping. It is reserved for a future, explicit per-criterion override -- none of the 51 v1 criteria carry such an override."
     },
-    "note": "Design Spec section 10. Finding generation is now a declarative classification_mapping (see generation_rule) -- resolved, no longer TBD."
+    "note": "Design Spec section 10. Finding generation is a declarative classification_mapping (see generation_rule)."
   },
   "rule_types": [
     {
@@ -606,9 +606,9 @@
       "max_theoretical_score": 320,
       "usage": "Internal ordering only. Never exposed as an 'EverCompass Score' or a single business health score.",
       "depends_on": [
-        "criteria[*].impact -- TBD for all 51 criteria.",
-        "A rule mapping a finding/pattern to a concentration category (isolated/repeated/concentrated/systemic). Weights are defined above; the categorization rule that assigns a category is not specified anywhere -- TBD.",
-        "A rule mapping a finding/journey stage to a journey_relevance category (low/moderate/high/critical). Weights are defined above; the categorization rule that assigns a category is not specified anywhere -- TBD."
+        "criteria[*].impact -- fully assigned for all 51 criteria (EverCompass v1.0 final methodology decisions).",
+        "The concentration category (isolated/repeated/concentrated/systemic) is now determined by concentration_determination_rule's explicit thresholds (see above). What remains open, as a separate dependency: what makes a set of findings 'related' in the first place (Design Spec section 15, Pattern) -- these thresholds operate on a related-findings set once one exists.",
+        "journey_relevance is fixed at \"high\" (journey_relevance_weight = 3) for every criterion in EverCompass v1.0, not derived via a categorization rule -- every criterion is intentionally assigned to one journey stage and evaluates a condition directly relevant to it. \"Critical\" is deliberately withheld at the criterion-definition level so criticality arises from evaluated diagnostic conditions, not an assumed foundational status. A differentiated categorization rule may be introduced in a later diagnostic version -- see journey_relevance_model.note."
       ],
       "relationship_to_precedence_order": "This numeric formula operationalizes the qualitative precedence_order/tie_breakers above (Design Spec section 17) into a single sortable number; both describe the same v1 priority principle, not two competing ones.",
       "concentration_determination_rule": {
@@ -641,7 +641,7 @@
       "explicit_relationship",
       "potential_relationship"
     ],
-    "note": "Design Spec sections 16-18. scoring_formula is now a declarative weighted product -- resolved, no longer TBD. Not yet computable end-to-end until its three dependencies above are resolved. Root-cause inference remains deferred beyond V1."
+    "note": "Design Spec sections 16-18. scoring_formula is a declarative weighted product. criteria[*].impact is fully assigned and journey_relevance is fixed at \"high\" for v1.0, so priority is computable end-to-end from this definition except for the concentration dependency noted in scoring_formula.depends_on (what makes findings \"related\" in the first place remains open). Root-cause inference remains deferred beyond V1."
   },
   "criteria": [
     {
@@ -2045,7 +2045,7 @@
         "meaning": "Affects the system as a whole."
       }
     ],
-    "note": "Scope labels per Design Spec section 12. No per-criterion impact assignments are given in either source document or in the five-decisions message -- criteria[*].impact is TBD for all 51 criteria pending that assignment."
+    "note": "Scope labels per Design Spec section 12. Per-criterion impact assignments are finalized for all 51 criteria as EverCompass v1.0 methodology decisions -- see criteria[*].impact."
   },
   "journey_relevance_model": {
     "levels": [
