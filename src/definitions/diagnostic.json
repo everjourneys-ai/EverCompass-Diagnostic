@@ -2,7 +2,7 @@
   "diagnostic_id": "evercompass",
   "name": "EverCompass Diagnostic",
   "version": "1.0.0",
-  "status": "draft",
+  "status": "published",
   "journey_stages": [
     {
       "id": "attract",
