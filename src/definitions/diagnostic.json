@@ -306,8 +306,18 @@
               {
                 "type": "has_finding_with_severity_on_high_impact_criterion",
                 "severity": "high",
-                "high_impact_criterion_definition": "TBD",
-                "note": "'high-impact criterion' is not defined by the decision. Candidate reading: impact level in {dimension, journey, cross_journey, system} (i.e. anything above the narrowest 'criterion' level). Needs confirmation -- see ambiguity log."
+                "high_impact_criterion_definition": {
+                  "qualifies": [
+                    "journey",
+                    "cross_journey",
+                    "system"
+                  ],
+                  "does_not_qualify": [
+                    "criterion",
+                    "dimension"
+                  ],
+                  "scope": "This definition applies ONLY to this dimension-level HIGH rule -- not reused elsewhere in the diagnostic definition."
+                }
               }
             ]
           },
@@ -382,8 +392,9 @@
               },
               {
                 "type": "no_meaningful_issues",
-                "meaningful_issues_definition": "TBD",
-                "note": "Candidate reading: no findings of type 'issue'. Needs confirmation -- see ambiguity log."
+                "meaningful_issues_definition": {
+                  "finding_type": "issue"
+                }
               }
             ]
           }
@@ -460,8 +471,13 @@
                 "type": "count_dimensions_with_meaningful_weakness",
                 "operator": ">=",
                 "value": 2,
-                "meaningful_weakness_definition": "TBD",
-                "note": "Candidate reading: a dimension whose own dominant condition is 'moderate' or worse. Needs confirmation -- see ambiguity log."
+                "meaningful_weakness_definition": {
+                  "criterion_classifications": [
+                    "needs_attention",
+                    "developing"
+                  ],
+                  "dimension_contains_weakness_if": "at_least_one_applicable_criterion_in_these_classifications"
+                }
               }
             ]
           },
@@ -474,7 +490,7 @@
                 "condition": "developing",
                 "operator": ">=",
                 "value": 2,
-                "note": "'Multiple' interpreted as >=2. Needs confirmation -- see ambiguity log."
+                "threshold_definition": "multiple = 2 or more dimensions"
               }
             ]
           },
@@ -483,13 +499,14 @@
             "match": "all",
             "conditions": [
               {
-                "type": "percentage_of_dimensions_at_or_above_condition",
+                "type": "count_dimensions_at_or_above_condition",
                 "conditions": [
                   "strong",
                   "operationalized"
                 ],
-                "operator": ">",
-                "value": 0.5
+                "operator": ">=",
+                "value": 3,
+                "threshold_definition": "most = 3 or more dimensions"
               },
               {
                 "type": "no_finding_with_severity_in",
@@ -505,15 +522,17 @@
             "match": "all",
             "conditions": [
               {
-                "type": "percentage_of_dimensions_at_condition",
+                "type": "count_dimensions_at_condition",
                 "condition": "operationalized",
-                "operator": ">",
-                "value": 0.5
+                "operator": ">=",
+                "value": 3,
+                "threshold_definition": "most = 3 or more dimensions"
               },
               {
                 "type": "no_meaningful_issues",
-                "meaningful_issues_definition": "TBD",
-                "note": "Candidate reading: no findings of type 'issue' across any dimension. Needs confirmation -- see ambiguity log."
+                "meaningful_issues_definition": {
+                  "finding_type": "issue"
+                }
               }
             ]
           }
@@ -591,7 +610,30 @@
         "A rule mapping a finding/pattern to a concentration category (isolated/repeated/concentrated/systemic). Weights are defined above; the categorization rule that assigns a category is not specified anywhere -- TBD.",
         "A rule mapping a finding/journey stage to a journey_relevance category (low/moderate/high/critical). Weights are defined above; the categorization rule that assigns a category is not specified anywhere -- TBD."
       ],
-      "relationship_to_precedence_order": "This numeric formula operationalizes the qualitative precedence_order/tie_breakers above (Design Spec section 17) into a single sortable number; both describe the same v1 priority principle, not two competing ones."
+      "relationship_to_precedence_order": "This numeric formula operationalizes the qualitative precedence_order/tie_breakers above (Design Spec section 17) into a single sortable number; both describe the same v1 priority principle, not two competing ones.",
+      "concentration_determination_rule": {
+        "type": "related_finding_count_thresholds",
+        "thresholds": {
+          "isolated": {
+            "related_finding_count": 1
+          },
+          "repeated": {
+            "related_finding_count": 2
+          },
+          "concentrated": {
+            "related_finding_count_min": 3,
+            "related_finding_count_max": 4
+          },
+          "systemic": {
+            "related_finding_count_min": 5,
+            "or": {
+              "spans_journey_stages_min": 2
+            },
+            "note": "Systemic represents a broader system-spanning pattern, not merely a large count -- either condition alone qualifies."
+          }
+        },
+        "depends_on": "What makes a set of findings 'related' in the first place (Design Spec section 15, Pattern) is not defined by this instruction and remains a separate, unresolved dependency -- these thresholds operate on a related-findings set once one exists."
+      }
     },
     "root_cause_statuses": [
       "none_identified",
@@ -625,7 +667,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "system",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.marketing_strategy.positioning",
@@ -651,7 +694,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "TBD",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.marketing_strategy.channels",
@@ -677,7 +721,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.marketing_strategy.acquisition",
@@ -703,7 +748,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.ux_design.discovery_experience",
@@ -729,7 +775,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.ux_design.landing_pages",
@@ -755,7 +802,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.ux_design.entry_points",
@@ -781,7 +829,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.brand_identity.awareness",
@@ -807,7 +856,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.brand_identity.differentiation",
@@ -833,7 +883,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.brand_identity.messaging",
@@ -859,7 +910,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.systems_integration.tracking",
@@ -885,7 +937,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.systems_integration.attribution",
@@ -911,7 +964,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "attract.systems_integration.acquisition_infrastructure",
@@ -937,7 +991,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.marketing_strategy.offer",
@@ -963,7 +1018,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.marketing_strategy.value_proposition",
@@ -989,7 +1045,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.marketing_strategy.content_strategy",
@@ -1015,7 +1072,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.ux_design.website_experience",
@@ -1041,7 +1099,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.ux_design.navigation",
@@ -1067,7 +1126,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.ux_design.information",
@@ -1093,7 +1153,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.brand_identity.trust",
@@ -1119,7 +1180,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "TBD",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.brand_identity.clarity",
@@ -1145,7 +1207,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.brand_identity.relevance",
@@ -1171,7 +1234,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.brand_identity.brand_experience",
@@ -1197,7 +1261,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "TBD",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.systems_integration.analytics",
@@ -1223,7 +1288,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.systems_integration.data_capture",
@@ -1249,7 +1315,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "engage.systems_integration.crm_connection",
@@ -1275,7 +1342,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.marketing_strategy.conversion_strategy",
@@ -1301,7 +1369,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.marketing_strategy.offer",
@@ -1327,7 +1396,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.marketing_strategy.sales_alignment",
@@ -1353,7 +1423,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "TBD",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.ux_design.conversion_paths",
@@ -1379,7 +1450,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.ux_design.forms",
@@ -1405,7 +1477,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.ux_design.booking",
@@ -1431,7 +1504,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.ux_design.checkout",
@@ -1457,7 +1531,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.brand_identity.value_communication",
@@ -1483,7 +1558,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.brand_identity.credibility",
@@ -1509,7 +1585,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.brand_identity.decision_confidence",
@@ -1535,7 +1612,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "TBD",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.systems_integration.lead_routing",
@@ -1561,7 +1639,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.systems_integration.follow_up",
@@ -1587,7 +1666,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "convert.systems_integration.conversion_tracking",
@@ -1613,7 +1693,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.marketing_strategy.customer_value",
@@ -1639,7 +1720,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.marketing_strategy.retention",
@@ -1665,7 +1747,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.marketing_strategy.lifecycle_strategy",
@@ -1691,7 +1774,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.ux_design.customer_experience",
@@ -1717,7 +1801,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.ux_design.account_service_interactions",
@@ -1743,7 +1828,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "criterion",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.brand_identity.relationship",
@@ -1769,7 +1855,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.brand_identity.loyalty",
@@ -1795,7 +1882,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.brand_identity.continued_brand_relevance",
@@ -1821,7 +1909,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.systems_integration.crm",
@@ -1847,7 +1936,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "system",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.systems_integration.automation",
@@ -1873,7 +1963,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.systems_integration.lifecycle_communication",
@@ -1899,7 +1990,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "cross_journey",
+      "journey_relevance": "TBD"
     },
     {
       "id": "retain.systems_integration.customer_data",
@@ -1925,7 +2017,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD"
+      "impact": "system",
+      "journey_relevance": "TBD"
     }
   ],
   "impact_model": {
@@ -1952,5 +2045,26 @@
       }
     ],
     "note": "Scope labels per Design Spec section 12. No per-criterion impact assignments are given in either source document or in the five-decisions message -- criteria[*].impact is TBD for all 51 criteria pending that assignment."
+  },
+  "journey_relevance_model": {
+    "levels": [
+      {
+        "id": "low",
+        "meaning": "Indirect relationship to the journey stage."
+      },
+      {
+        "id": "moderate",
+        "meaning": "Meaningful relationship to the journey stage."
+      },
+      {
+        "id": "high",
+        "meaning": "Direct relationship to the journey stage."
+      },
+      {
+        "id": "critical",
+        "meaning": "Foundational condition that substantially prevents the journey stage from functioning."
+      }
+    ],
+    "note": "Design Spec priority signals + this session's decision. Must be explicitly defined on the diagnostic criteria/configuration where required -- never inferred by the engine from question wording. Per-criterion values are not assigned in this round; see criteria[*].journey_relevance (TBD for all 51)."
   }
 }

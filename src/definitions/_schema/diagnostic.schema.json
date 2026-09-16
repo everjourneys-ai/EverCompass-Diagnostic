@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://everjourneys.ai/schemas/evercompass/src-diagnostic.schema.json",
   "title": "EverCompass Diagnostic Definition (src/definitions/diagnostic.json)",
-  "description": "Validates the diagnostic definition consumed by src/engine. As of this revision, finding_model.generation_rule, severity_model.derivation_rule, aggregation.dimension.method, aggregation.journey.method, and priority.scoring_formula are RESOLVED (real declarative rule objects, not \"TBD\"). A new dependency they introduced -- criteria[*].impact -- is itself still TBD for all 51 criteria, since no per-criterion impact assignment exists in any source document. Several interpretive sub-terms inside the resolved rules (e.g. 'high-impact criterion', 'meaningful issues') are also still open and are typed permissively so they can hold either the literal string \"TBD\" or a future resolved value without a schema change.",
+  "description": "Validates the diagnostic definition consumed by src/engine. finding_model.generation_rule, severity_model.derivation_rule, aggregation.dimension.method, aggregation.journey.method, and priority.scoring_formula are fully RESOLVED, including their previously-open interpretive sub-terms (high-impact criterion, meaningful weakness/issue, multiple/most/all, concentration thresholds). criteria[*].impact is now assigned for 46/51 criteria -- the remaining 5 are flagged for human approval (still \"TBD\", not invented). criteria[*].journey_relevance is a new structural field, added but not assigned in this round (TBD for all 51) alongside journey_relevance_model.",
   "type": "object",
   "required": [
     "diagnostic_id", "name", "version", "status",
     "journey_stages", "dimensions",
     "response_model", "applicability_model", "classification_model",
-    "severity_model", "finding_model", "impact_model", "rule_types",
+    "severity_model", "finding_model", "impact_model", "journey_relevance_model", "rule_types",
     "aggregation", "priority", "criteria"
   ],
   "additionalProperties": false,
@@ -101,6 +101,21 @@
           "items": { "$ref": "#/$defs/idMeaningEntry" },
           "minItems": 5,
           "maxItems": 5
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "journey_relevance_model": {
+      "type": "object",
+      "required": ["levels"],
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/idMeaningEntry" },
+          "minItems": 4,
+          "maxItems": 4
         },
         "note": { "type": "string" }
       }
@@ -395,13 +410,23 @@
       "type": "object",
       "required": [
         "type", "formula", "severity_weights", "impact_weights",
-        "concentration_weights", "journey_relevance_weights",
+        "concentration_weights", "concentration_determination_rule",
+        "journey_relevance_weights",
         "max_theoretical_score", "usage", "depends_on"
       ],
       "additionalProperties": false,
       "properties": {
         "type": { "const": "weighted_product" },
         "formula": { "type": "string", "minLength": 1 },
+        "concentration_determination_rule": {
+          "type": "object",
+          "required": ["type", "thresholds", "depends_on"],
+          "properties": {
+            "type": { "type": "string" },
+            "thresholds": { "type": "object" },
+            "depends_on": { "type": "string" }
+          }
+        },
         "severity_weights": {
           "type": "object",
           "required": ["low", "moderate", "high", "critical"],
@@ -448,7 +473,7 @@
 
     "criterion": {
       "type": "object",
-      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity", "impact"],
+      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity", "impact", "journey_relevance"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -523,10 +548,17 @@
           }
         },
         "impact": {
-          "description": "Either \"TBD\" (current state for all 51 criteria) or one of the five impact levels once assigned.",
+          "description": "Either \"TBD\" (5 criteria flagged for human approval) or one of the five impact levels (46 criteria assigned this round).",
           "oneOf": [
             { "const": "TBD" },
             { "$ref": "#/$defs/impactLevel" }
+          ]
+        },
+        "journey_relevance": {
+          "description": "Either \"TBD\" (current state for all 51 criteria -- structural field only, not assigned this round) or one of the four journey_relevance levels once assigned.",
+          "oneOf": [
+            { "const": "TBD" },
+            { "type": "string", "enum": ["low", "moderate", "high", "critical"] }
           ]
         }
       }
