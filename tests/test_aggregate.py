@@ -3,7 +3,6 @@ import unittest
 from helpers import load_definition
 
 from engine.aggregate import aggregate_dimensions, aggregate_journey_stages
-from engine.errors import UndefinedDiagnosticRuleError
 from engine.types import CriterionResult, Finding
 
 
@@ -15,9 +14,10 @@ class AggregateTests(unittest.TestCase):
         # finding, which resolves both its dimension and journey via the
         # unambiguous "any critical finding" rule regardless of how sparse
         # the rest of this synthetic set is. (An earlier version of this
-        # fixture used a lone *high*-severity finding, which turned out to
-        # hit a real gap in the frozen condition_rules -- see
-        # test_journey_condition_rules_gap_is_not_silently_guessed below.)
+        # fixture used a lone *high*-severity finding, which at the time hit
+        # a real gap in the frozen condition_rules, since resolved by
+        # Decision 1 -- see test_single_high_finding_journey_gap_is_resolved
+        # below.)
         self.criterion_results = [
             CriterionResult("attract.marketing_strategy.audience", "attract", "marketing_strategy", 1, "needs_attention", "F-001"),
             CriterionResult("attract.marketing_strategy.positioning", "attract", "marketing_strategy", 4, "strong", None),
@@ -43,7 +43,9 @@ class AggregateTests(unittest.TestCase):
         ux = dims["ux_design"]
         self.assertEqual(ux.criteria, ["attract.ux_design.landing_pages"])
         self.assertEqual(ux.classification_distribution, {"operationalized": 1})
-        self.assertEqual(ux.dominant_condition, "strong")  # majority strong-or-better, no high/critical findings here
+        # 100% of ux_design's one applicable criterion is operationalized ->
+        # "operationalized" (Decision 3: ALL applicable, evaluated before strong)
+        self.assertEqual(ux.dominant_condition, "operationalized")
 
         # dimensions with no criteria in this synthetic set still appear, empty
         self.assertIn("brand_identity", dims)
@@ -85,12 +87,9 @@ class AggregateTests(unittest.TestCase):
         are zero does the journey resolve to "no_data".
 
         Uses a finding-COUNT-based rule (2+ moderate findings) rather than
-        a dimension-COUNT-based one deliberately -- see
-        test_journey_condition_rules_gap_is_not_silently_guessed and
-        test_operationalized_tier_is_unreachable_given_the_frozen_rule_order:
-        several dimension-count-based rules turn out not to scale down
-        cleanly when fewer than 4 dimensions have data, which is a separate,
-        already-documented finding, not what this test is checking.
+        a dimension-COUNT-based one deliberately, to isolate this test from
+        the "most"/"multiple" scaling behavior (Decision 2) covered
+        separately in test_condition_rule_decisions.py::PartialJourneyCoverageTests.
         """
         # convert: only marketing_strategy and brand_identity have any data
         # (2 of 4 dimensions); ux_design and systems_integration are
@@ -118,17 +117,14 @@ class AggregateTests(unittest.TestCase):
         journeys = aggregate_journey_stages(self.definition, criterion_results, [])
         self.assertEqual(journeys["convert"].dominant_condition, "no_data")
 
-    def test_journey_condition_rules_gap_is_not_silently_guessed(self):
+    def test_single_high_finding_journey_gap_is_resolved(self):
         """
-        Real, discovered gap in the frozen v1.0 methodology (not a bug
-        here): a journey with exactly one high-severity finding and
-        everything else clean matches neither HIGH (needs 2+
-        occurrences) nor STRONG (requires zero high/critical findings
-        anywhere in the journey) -- reproducible with full, realistic
-        51-criterion data, not just this sparse synthetic set (verified
-        separately against the real engine during implementation). The
-        interpreter must fail loudly and specifically rather than guess
-        which of the six tiers is "closest".
+        Formerly a documented gap (a journey with exactly one high-severity
+        finding matched neither HIGH nor STRONG) -- resolved by Decision 1
+        (this session, final for v1.0): HIGH is now "any High finding",
+        exactly like CRITICAL. See test_condition_rule_decisions.py for the
+        full set of Decision 1/2/3 regression tests; this one is kept here
+        as the direct before/after of the original discovered gap.
         """
         criterion_results = [
             CriterionResult("engage.brand_identity.trust", "engage", "brand_identity", 3, "developing", "F-001"),
@@ -138,32 +134,25 @@ class AggregateTests(unittest.TestCase):
         findings = [
             Finding("F-001", "engage.brand_identity.trust", "engage", "brand_identity", "issue", "high"),
         ]
-        with self.assertRaises(UndefinedDiagnosticRuleError):
-            aggregate_journey_stages(self.definition, criterion_results, findings)
+        journeys = aggregate_journey_stages(self.definition, criterion_results, findings)
+        self.assertEqual(journeys["engage"].dominant_condition, "high")
 
-    def test_operationalized_tier_is_unreachable_given_the_frozen_rule_order(self):
+    def test_operationalized_tier_is_now_reachable_and_outranks_strong(self):
         """
-        Real, discovered gap in the frozen v1.0 methodology (not a bug
-        here, and not something this test invents a fix for): STRONG's
-        condition ("majority of applicable criteria are Strong or better
-        AND no High or Critical findings") is a strict superset of what
-        triggers OPERATIONALIZED ("majority ... Operationalized AND no
-        meaningful issues") -- every population that would satisfy
-        OPERATIONALIZED also trivially satisfies STRONG's weaker
-        condition, and STRONG is evaluated first in the given precedence
-        order (critical -> high -> moderate -> developing -> strong ->
-        operationalized). So OPERATIONALIZED can never actually be
-        reached for any input, at either the dimension or journey level,
-        as literally specified. Verified here with a dimension where
-        100% of applicable criteria are answered "operationalized" --
-        the correct-per-the-frozen-rules result is still "strong".
+        Formerly a documented gap (OPERATIONALIZED was unreachable because
+        STRONG's weaker condition matched first) -- resolved by Decision 3
+        (this session, final for v1.0): OPERATIONALIZED now requires ALL
+        applicable criteria (not a majority) and is evaluated before STRONG.
+        See test_condition_rule_decisions.py for the full regression suite;
+        this one is kept here as the direct before/after of the original
+        discovered gap.
         """
         criterion_results = [
             CriterionResult(f"attract.ux_design.{slug}", "attract", "ux_design", 5, "operationalized", None)
             for slug in ("discovery_experience", "landing_pages", "entry_points")
         ]
         dims = aggregate_dimensions(self.definition, criterion_results, [])
-        self.assertEqual(dims["ux_design"].dominant_condition, "strong")
+        self.assertEqual(dims["ux_design"].dominant_condition, "operationalized")
         self.assertEqual(dims["ux_design"].classification_distribution, {"operationalized": 3})
 
 

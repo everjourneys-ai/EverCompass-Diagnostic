@@ -1174,7 +1174,7 @@
             "operationalized": 13
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       },
       "ux_design": {
         "criteria": [
@@ -1210,7 +1210,7 @@
             "operationalized": 12
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       },
       "brand_identity": {
         "criteria": [
@@ -1248,7 +1248,7 @@
             "operationalized": 13
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       },
       "systems_integration": {
         "criteria": [
@@ -1286,7 +1286,7 @@
             "operationalized": 13
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       }
     },
     "journey_stages": {
@@ -1326,7 +1326,7 @@
             "operationalized": 13
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       },
       "engage": {
         "criteria": [
@@ -1364,7 +1364,7 @@
             "operationalized": 13
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       },
       "convert": {
         "criteria": [
@@ -1402,7 +1402,7 @@
             "operationalized": 13
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       },
       "retain": {
         "criteria": [
@@ -1438,7 +1438,7 @@
             "operationalized": 12
           }
         },
-        "dominant_condition": "strong"
+        "dominant_condition": "operationalized"
       }
     },
     "priorities": [],

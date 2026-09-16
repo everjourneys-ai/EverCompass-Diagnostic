@@ -298,26 +298,9 @@
             "match": "any",
             "conditions": [
               {
-                "type": "count_findings_with_severity",
+                "type": "has_finding_with_severity",
                 "severity": "high",
-                "operator": ">=",
-                "value": 2
-              },
-              {
-                "type": "has_finding_with_severity_on_high_impact_criterion",
-                "severity": "high",
-                "high_impact_criterion_definition": {
-                  "qualifies": [
-                    "journey",
-                    "cross_journey",
-                    "system"
-                  ],
-                  "does_not_qualify": [
-                    "criterion",
-                    "dimension"
-                  ],
-                  "scope": "This definition applies ONLY to this dimension-level HIGH rule -- not reused elsewhere in the diagnostic definition."
-                }
+                "note": "Decision 1 (this session): any High finding produces a High condition -- no 2+ threshold, no high-impact-criterion special case (HIGH now works exactly like CRITICAL)."
               }
             ]
           },
@@ -357,6 +340,27 @@
             ]
           },
           {
+            "condition": "operationalized",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "percentage_of_applicable_in_classifications",
+                "classifications": [
+                  "operationalized"
+                ],
+                "operator": "==",
+                "value": 1.0,
+                "note": "Decision 3 (this session): ALL applicable criteria, not a majority -- preserves the distinction between Strong and Operationalized."
+              },
+              {
+                "type": "no_meaningful_issues",
+                "meaningful_issues_definition": {
+                  "finding_type": "issue"
+                }
+              }
+            ]
+          },
+          {
             "condition": "strong",
             "match": "all",
             "conditions": [
@@ -377,29 +381,9 @@
                 ]
               }
             ]
-          },
-          {
-            "condition": "operationalized",
-            "match": "all",
-            "conditions": [
-              {
-                "type": "percentage_of_applicable_in_classifications",
-                "classifications": [
-                  "operationalized"
-                ],
-                "operator": ">",
-                "value": 0.5
-              },
-              {
-                "type": "no_meaningful_issues",
-                "meaningful_issues_definition": {
-                  "finding_type": "issue"
-                }
-              }
-            ]
           }
         ],
-        "evaluation_order_note": "Rules are evaluated top to bottom (critical first); the first matching condition wins.",
+        "evaluation_order_note": "Rules are evaluated top to bottom in this order: critical, high, moderate, developing, operationalized, strong (Decisions 1 & 3, this session -- operationalized moved before strong, and requires ALL applicable criteria, so a fully-operationalized population no longer falls through to strong).",
         "excludes": [
           "numeric_average",
           "overall_score"
@@ -418,16 +402,13 @@
       "method": {
         "type": "condition_rules",
         "steps": [
+          "exclude_dimensions_with_zero_applicable_criteria_from_applicable_dimension_counts",
           "severity_of_findings_across_dimensions",
           "concentration_of_weaknesses",
           "number_of_affected_dimensions",
           "cross_dimension_patterns",
           "determine_dominant_condition"
         ],
-        "insufficient_applicable_criteria": {
-          "condition": "no_data",
-          "note": "Explicit edge case for a journey stage whose underlying dimensions have insufficient applicable criteria to determine a condition. Exact threshold for 'insufficient' beyond the zero-applicable-per-dimension case is not specified -- needs confirmation, see ambiguity log."
-        },
         "condition_rules": [
           {
             "condition": "critical",
@@ -444,16 +425,9 @@
             "match": "any",
             "conditions": [
               {
-                "type": "count_findings_with_severity",
+                "type": "has_finding_with_severity",
                 "severity": "high",
-                "operator": ">=",
-                "value": 2
-              },
-              {
-                "type": "count_dimensions_with_finding_severity",
-                "severity": "high",
-                "operator": ">=",
-                "value": 2
+                "note": "Decision 1 (this session): any High finding produces a High condition -- no 2+ threshold, no 2-dimensions threshold."
               }
             ]
           },
@@ -477,7 +451,8 @@
                     "developing"
                   ],
                   "dimension_contains_weakness_if": "at_least_one_applicable_criterion_in_these_classifications"
-                }
+                },
+                "multiple_definition": "Decision 2 (this session): 'multiple' = 2 or more applicable dimensions, a fixed count, not scaled by how many dimensions are applicable."
               }
             ]
           },
@@ -490,7 +465,24 @@
                 "condition": "developing",
                 "operator": ">=",
                 "value": 2,
-                "threshold_definition": "multiple = 2 or more dimensions"
+                "multiple_definition": "Decision 2 (this session): 'multiple' = 2 or more applicable dimensions, a fixed count, not scaled."
+              }
+            ]
+          },
+          {
+            "condition": "operationalized",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "all_applicable_dimensions_at_condition",
+                "condition": "operationalized",
+                "note": "Decision 3 (this session): ALL applicable dimensions, not a majority. Dimensions with zero applicable criteria are excluded from consideration (Decision 2), not treated as failing this check."
+              },
+              {
+                "type": "no_meaningful_issues",
+                "meaningful_issues_definition": {
+                  "finding_type": "issue"
+                }
               }
             ]
           },
@@ -499,14 +491,22 @@
             "match": "all",
             "conditions": [
               {
-                "type": "count_dimensions_at_or_above_condition",
+                "type": "majority_of_applicable_dimensions_at_or_above_condition",
                 "conditions": [
                   "strong",
                   "operationalized"
                 ],
-                "operator": ">=",
-                "value": 3,
-                "threshold_definition": "most = 3 or more dimensions"
+                "most_definition": {
+                  "rule": "strict majority of applicable dimensions",
+                  "scale": {
+                    "1": 1,
+                    "2": 2,
+                    "3": 2,
+                    "4": 3
+                  },
+                  "formula": "floor(applicable_dimension_count / 2) + 1",
+                  "decision": "Decision 2 (this session) -- replaces the old fixed '3 or more' threshold, which didn't scale down when fewer than 4 dimensions had data."
+                }
               },
               {
                 "type": "no_finding_with_severity_in",
@@ -516,32 +516,17 @@
                 ]
               }
             ]
-          },
-          {
-            "condition": "operationalized",
-            "match": "all",
-            "conditions": [
-              {
-                "type": "count_dimensions_at_condition",
-                "condition": "operationalized",
-                "operator": ">=",
-                "value": 3,
-                "threshold_definition": "most = 3 or more dimensions"
-              },
-              {
-                "type": "no_meaningful_issues",
-                "meaningful_issues_definition": {
-                  "finding_type": "issue"
-                }
-              }
-            ]
           }
         ],
-        "evaluation_order_note": "Rules are evaluated top to bottom (critical first); the first matching condition wins.",
+        "evaluation_order_note": "Rules are evaluated top to bottom in this order: critical, high, moderate, developing, operationalized, strong (Decisions 1 & 3, this session).",
         "excludes": [
           "dimension_score_average",
           "overall_score"
-        ]
+        ],
+        "zero_applicable_dimensions": {
+          "condition": "no_data",
+          "note": "Decision 2 (this session), final: dimensions with zero applicable criteria are excluded from every applicable-dimension count above. Only when ALL FOUR dimensions have zero applicable criteria does the journey resolve to no_data. 1-3 zero-applicable dimensions are simply excluded from the counts and thresholds -- no special status, no confidence penalty, no additional numeric threshold."
+        }
       },
       "preserves": [
         "criterion_results",

@@ -91,6 +91,34 @@ def _eval_predicate(pred: dict, ctx: dict) -> bool:
         n = sum(1 for cond in dims_in_journey.values() if cond == pred["condition"])
         return _compare(n, pred["operator"], pred["value"])
 
+    if t == "all_applicable_dimensions_at_condition":
+        # Decision 3: ALL applicable dimensions (those not "no_data") must
+        # equal the given condition. Vacuously false if there are no
+        # applicable dimensions at all -- callers short-circuit that case
+        # to "no_data" before condition_rules ever runs (see
+        # journey_dominant_condition), so this should never actually see
+        # an all-no_data dims_in_journey in practice.
+        dims_in_journey = ctx["dims_in_journey"]
+        applicable = [cond for cond in dims_in_journey.values() if cond != "no_data"]
+        return bool(applicable) and all(cond == pred["condition"] for cond in applicable)
+
+    if t == "majority_of_applicable_dimensions_at_or_above_condition":
+        # Decision 2: "most" = a strict majority of *applicable* dimensions
+        # (those not "no_data"), scaled by how many are applicable --
+        # floor(applicable_count / 2) + 1. This is generic arithmetic (the
+        # standard definition of "strict majority"), not EverCompass-specific
+        # business logic; a future diagnostic version could reuse this
+        # predicate type with entirely different qualifying conditions.
+        dims_in_journey = ctx["dims_in_journey"]
+        applicable = [cond for cond in dims_in_journey.values() if cond != "no_data"]
+        applicable_count = len(applicable)
+        if applicable_count == 0:
+            return False
+        required = applicable_count // 2 + 1
+        qualifying = set(pred["conditions"])
+        n = sum(1 for cond in applicable if cond in qualifying)
+        return n >= required
+
     raise NotImplementedError(f"unknown condition predicate type: {t!r}")
 
 
