@@ -143,8 +143,42 @@
         "meaning": "Fundamental condition that may substantially prevent the relevant journey stage from functioning"
       }
     ],
-    "derivation_rule": "TBD",
-    "note": "Severity is separate from score and classification and must not be a simple one-to-one mapping from score (Design Spec §11). The rule that assigns severity per criterion/condition is not defined in the source documents and is not invented here."
+    "derivation_rule": {
+      "type": "classification_impact_matrix",
+      "matrix": {
+        "needs_attention": {
+          "criterion": "low",
+          "dimension": "moderate",
+          "journey": "high",
+          "cross_journey": "high",
+          "system": "critical"
+        },
+        "developing": {
+          "criterion": "low",
+          "dimension": "moderate",
+          "journey": "high",
+          "cross_journey": "high",
+          "system": "high"
+        },
+        "strong": {
+          "criterion": null,
+          "dimension": null,
+          "journey": null,
+          "cross_journey": null,
+          "system": null
+        },
+        "operationalized": {
+          "criterion": null,
+          "dimension": null,
+          "journey": null,
+          "cross_journey": null,
+          "system": null
+        }
+      },
+      "none_meaning": "No negative severity is generated from this classification, regardless of impact level.",
+      "depends_on": "criteria[*].impact, which is TBD for all 51 criteria -- see ambiguity log."
+    },
+    "note": "Design Spec section 11. Severity is derived from classification x criterion impact (see derivation_rule), never from raw score alone -- resolved, no longer TBD. Not yet computable end-to-end until criteria[*].impact is filled in."
   },
   "finding_model": {
     "types": [
@@ -192,8 +226,18 @@
         ]
       }
     },
-    "generation_rule": "TBD",
-    "note": "Not every criterion must produce a finding (Design Spec §10). The condition that triggers a finding, and which type it produces, is not defined in the source documents and is not invented here."
+    "generation_rule": {
+      "type": "classification_mapping",
+      "mapping": {
+        "needs_attention": "issue",
+        "developing": "issue",
+        "strong": "strength",
+        "operationalized": "strength"
+      },
+      "not_applicable_result": null,
+      "opportunity_note": "The 'opportunity' finding type is never produced by this mapping. It is reserved for a future, explicit per-criterion override -- none of the 51 v1 criteria carry such an override."
+    },
+    "note": "Design Spec section 10. Finding generation is now a declarative classification_mapping (see generation_rule) -- resolved, no longer TBD."
   },
   "rule_types": [
     {
@@ -224,7 +268,132 @@
   ],
   "aggregation": {
     "dimension": {
-      "method": "TBD",
+      "method": {
+        "type": "condition_rules",
+        "steps": [
+          "exclude_not_applicable",
+          "count_applicable",
+          "count_classifications",
+          "count_findings_by_severity",
+          "identify_concentration",
+          "determine_dominant_condition"
+        ],
+        "zero_applicable_criteria": {
+          "condition": "no_data",
+          "note": "Explicit edge case: no CRITICAL..OPERATIONALIZED condition is assigned when a dimension has zero applicable criteria."
+        },
+        "condition_rules": [
+          {
+            "condition": "critical",
+            "match": "any",
+            "conditions": [
+              {
+                "type": "has_finding_with_severity",
+                "severity": "critical"
+              }
+            ]
+          },
+          {
+            "condition": "high",
+            "match": "any",
+            "conditions": [
+              {
+                "type": "count_findings_with_severity",
+                "severity": "high",
+                "operator": ">=",
+                "value": 2
+              },
+              {
+                "type": "has_finding_with_severity_on_high_impact_criterion",
+                "severity": "high",
+                "high_impact_criterion_definition": "TBD",
+                "note": "'high-impact criterion' is not defined by the decision. Candidate reading: impact level in {dimension, journey, cross_journey, system} (i.e. anything above the narrowest 'criterion' level). Needs confirmation -- see ambiguity log."
+              }
+            ]
+          },
+          {
+            "condition": "moderate",
+            "match": "any",
+            "conditions": [
+              {
+                "type": "count_findings_with_severity",
+                "severity": "moderate",
+                "operator": ">=",
+                "value": 2
+              },
+              {
+                "type": "percentage_of_applicable_in_classifications",
+                "classifications": [
+                  "needs_attention",
+                  "developing"
+                ],
+                "operator": ">=",
+                "value": 0.5
+              }
+            ]
+          },
+          {
+            "condition": "developing",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "percentage_of_applicable_in_classifications",
+                "classifications": [
+                  "developing"
+                ],
+                "operator": ">",
+                "value": 0.5
+              }
+            ]
+          },
+          {
+            "condition": "strong",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "percentage_of_applicable_in_classifications",
+                "classifications": [
+                  "strong",
+                  "operationalized"
+                ],
+                "operator": ">",
+                "value": 0.5
+              },
+              {
+                "type": "no_finding_with_severity_in",
+                "severities": [
+                  "high",
+                  "critical"
+                ]
+              }
+            ]
+          },
+          {
+            "condition": "operationalized",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "percentage_of_applicable_in_classifications",
+                "classifications": [
+                  "operationalized"
+                ],
+                "operator": ">",
+                "value": 0.5
+              },
+              {
+                "type": "no_meaningful_issues",
+                "meaningful_issues_definition": "TBD",
+                "note": "Candidate reading: no findings of type 'issue'. Needs confirmation -- see ambiguity log."
+              }
+            ]
+          }
+        ],
+        "evaluation_order_note": "Rules are evaluated top to bottom (critical first); the first matching condition wins.",
+        "excludes": [
+          "numeric_average",
+          "overall_score"
+        ]
+      },
       "preserves": [
         "criterion_results",
         "findings",
@@ -232,17 +401,136 @@
         "severity_distribution",
         "concentration_pattern_information"
       ],
-      "note": "Design Spec §13: dimension aggregation is 'not a simple average'; the exact aggregation classification logic is proprietary and undefined in the source documents."
+      "note": "Design Spec section 13: 'not a simple average'. Resolved as declarative condition rules -- see method. Preserves distribution/pattern info; never reduces to a number."
     },
     "journey": {
-      "method": "TBD",
+      "method": {
+        "type": "condition_rules",
+        "steps": [
+          "severity_of_findings_across_dimensions",
+          "concentration_of_weaknesses",
+          "number_of_affected_dimensions",
+          "cross_dimension_patterns",
+          "determine_dominant_condition"
+        ],
+        "insufficient_applicable_criteria": {
+          "condition": "no_data",
+          "note": "Explicit edge case for a journey stage whose underlying dimensions have insufficient applicable criteria to determine a condition. Exact threshold for 'insufficient' beyond the zero-applicable-per-dimension case is not specified -- needs confirmation, see ambiguity log."
+        },
+        "condition_rules": [
+          {
+            "condition": "critical",
+            "match": "any",
+            "conditions": [
+              {
+                "type": "has_finding_with_severity",
+                "severity": "critical"
+              }
+            ]
+          },
+          {
+            "condition": "high",
+            "match": "any",
+            "conditions": [
+              {
+                "type": "count_findings_with_severity",
+                "severity": "high",
+                "operator": ">=",
+                "value": 2
+              },
+              {
+                "type": "count_dimensions_with_finding_severity",
+                "severity": "high",
+                "operator": ">=",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "condition": "moderate",
+            "match": "any",
+            "conditions": [
+              {
+                "type": "count_findings_with_severity",
+                "severity": "moderate",
+                "operator": ">=",
+                "value": 2
+              },
+              {
+                "type": "count_dimensions_with_meaningful_weakness",
+                "operator": ">=",
+                "value": 2,
+                "meaningful_weakness_definition": "TBD",
+                "note": "Candidate reading: a dimension whose own dominant condition is 'moderate' or worse. Needs confirmation -- see ambiguity log."
+              }
+            ]
+          },
+          {
+            "condition": "developing",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "count_dimensions_with_condition",
+                "condition": "developing",
+                "operator": ">=",
+                "value": 2,
+                "note": "'Multiple' interpreted as >=2. Needs confirmation -- see ambiguity log."
+              }
+            ]
+          },
+          {
+            "condition": "strong",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "percentage_of_dimensions_at_or_above_condition",
+                "conditions": [
+                  "strong",
+                  "operationalized"
+                ],
+                "operator": ">",
+                "value": 0.5
+              },
+              {
+                "type": "no_finding_with_severity_in",
+                "severities": [
+                  "high",
+                  "critical"
+                ]
+              }
+            ]
+          },
+          {
+            "condition": "operationalized",
+            "match": "all",
+            "conditions": [
+              {
+                "type": "percentage_of_dimensions_at_condition",
+                "condition": "operationalized",
+                "operator": ">",
+                "value": 0.5
+              },
+              {
+                "type": "no_meaningful_issues",
+                "meaningful_issues_definition": "TBD",
+                "note": "Candidate reading: no findings of type 'issue' across any dimension. Needs confirmation -- see ambiguity log."
+              }
+            ]
+          }
+        ],
+        "evaluation_order_note": "Rules are evaluated top to bottom (critical first); the first matching condition wins.",
+        "excludes": [
+          "dimension_score_average",
+          "overall_score"
+        ]
+      },
       "preserves": [
         "criterion_results",
         "findings",
         "classification_distribution",
         "severity_distribution"
       ],
-      "note": "Design Spec §14: journey aggregation preserves structure rather than reducing the stage to an average. The same criterion result contributes to both its journey result and its dimension result."
+      "note": "Design Spec section 14. Resolved as declarative condition rules over the journey's four dimensions -- see method. Never averages dimension scores; preserves dimension-level information."
     },
     "overall_score": null,
     "overall_score_note": "V1 deliberately does not reduce the entire business to a single number (Design Spec §20)."
@@ -268,13 +556,49 @@
       "greater_concentration",
       "greater_journey_relevance"
     ],
-    "scoring_formula": "TBD",
+    "scoring_formula": {
+      "type": "weighted_product",
+      "formula": "priority_score = severity_weight * impact_weight * concentration_weight * journey_relevance_weight",
+      "severity_weights": {
+        "low": 1,
+        "moderate": 2,
+        "high": 3,
+        "critical": 4
+      },
+      "impact_weights": {
+        "criterion": 1,
+        "dimension": 2,
+        "journey": 3,
+        "cross_journey": 4,
+        "system": 5
+      },
+      "concentration_weights": {
+        "isolated": 1,
+        "repeated": 2,
+        "concentrated": 3,
+        "systemic": 4
+      },
+      "journey_relevance_weights": {
+        "low": 1,
+        "moderate": 2,
+        "high": 3,
+        "critical": 4
+      },
+      "max_theoretical_score": 320,
+      "usage": "Internal ordering only. Never exposed as an 'EverCompass Score' or a single business health score.",
+      "depends_on": [
+        "criteria[*].impact -- TBD for all 51 criteria.",
+        "A rule mapping a finding/pattern to a concentration category (isolated/repeated/concentrated/systemic). Weights are defined above; the categorization rule that assigns a category is not specified anywhere -- TBD.",
+        "A rule mapping a finding/journey stage to a journey_relevance category (low/moderate/high/critical). Weights are defined above; the categorization rule that assigns a category is not specified anywhere -- TBD."
+      ],
+      "relationship_to_precedence_order": "This numeric formula operationalizes the qualitative precedence_order/tie_breakers above (Design Spec section 17) into a single sortable number; both describe the same v1 priority principle, not two competing ones."
+    },
     "root_cause_statuses": [
       "none_identified",
       "explicit_relationship",
       "potential_relationship"
     ],
-    "note": "Design Spec §16-§18: an ordered list of qualitative signals is defined, not a numeric scoring function or cutoffs. A priority is not simply the lowest score. Sophisticated root-cause inference is deferred beyond V1; V1 must not claim causal certainty from correlation alone."
+    "note": "Design Spec sections 16-18. scoring_formula is now a declarative weighted product -- resolved, no longer TBD. Not yet computable end-to-end until its three dependencies above are resolved. Root-cause inference remains deferred beyond V1."
   },
   "criteria": [
     {
@@ -300,7 +624,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.marketing_strategy.positioning",
@@ -325,7 +650,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.marketing_strategy.channels",
@@ -350,7 +676,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.marketing_strategy.acquisition",
@@ -375,7 +702,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.ux_design.discovery_experience",
@@ -400,7 +728,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.ux_design.landing_pages",
@@ -425,7 +754,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.ux_design.entry_points",
@@ -450,7 +780,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.brand_identity.awareness",
@@ -475,7 +806,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.brand_identity.differentiation",
@@ -500,7 +832,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.brand_identity.messaging",
@@ -525,7 +858,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.systems_integration.tracking",
@@ -550,7 +884,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.systems_integration.attribution",
@@ -575,7 +910,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "attract.systems_integration.acquisition_infrastructure",
@@ -600,7 +936,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.marketing_strategy.offer",
@@ -625,7 +962,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.marketing_strategy.value_proposition",
@@ -650,7 +988,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.marketing_strategy.content_strategy",
@@ -675,7 +1014,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.ux_design.website_experience",
@@ -700,7 +1040,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.ux_design.navigation",
@@ -725,7 +1066,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.ux_design.information",
@@ -750,7 +1092,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.brand_identity.trust",
@@ -775,7 +1118,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.brand_identity.clarity",
@@ -800,7 +1144,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.brand_identity.relevance",
@@ -825,7 +1170,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.brand_identity.brand_experience",
@@ -850,7 +1196,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.systems_integration.analytics",
@@ -875,7 +1222,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.systems_integration.data_capture",
@@ -900,7 +1248,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "engage.systems_integration.crm_connection",
@@ -925,7 +1274,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.marketing_strategy.conversion_strategy",
@@ -950,7 +1300,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.marketing_strategy.offer",
@@ -975,7 +1326,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.marketing_strategy.sales_alignment",
@@ -1000,7 +1352,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.ux_design.conversion_paths",
@@ -1025,7 +1378,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.ux_design.forms",
@@ -1050,7 +1404,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.ux_design.booking",
@@ -1075,7 +1430,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.ux_design.checkout",
@@ -1100,7 +1456,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.brand_identity.value_communication",
@@ -1125,7 +1482,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.brand_identity.credibility",
@@ -1150,7 +1508,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.brand_identity.decision_confidence",
@@ -1175,7 +1534,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.systems_integration.lead_routing",
@@ -1200,7 +1560,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.systems_integration.follow_up",
@@ -1225,7 +1586,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "convert.systems_integration.conversion_tracking",
@@ -1250,7 +1612,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.marketing_strategy.customer_value",
@@ -1275,7 +1638,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.marketing_strategy.retention",
@@ -1300,7 +1664,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.marketing_strategy.lifecycle_strategy",
@@ -1325,7 +1690,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.ux_design.customer_experience",
@@ -1350,7 +1716,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.ux_design.account_service_interactions",
@@ -1375,7 +1742,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.brand_identity.relationship",
@@ -1400,7 +1768,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.brand_identity.loyalty",
@@ -1425,7 +1794,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.brand_identity.continued_brand_relevance",
@@ -1450,7 +1820,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.systems_integration.crm",
@@ -1475,7 +1846,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.systems_integration.automation",
@@ -1500,7 +1872,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.systems_integration.lifecycle_communication",
@@ -1525,7 +1898,8 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     },
     {
       "id": "retain.systems_integration.customer_data",
@@ -1550,7 +1924,33 @@
         "rule": {
           "ref": "severity_model.derivation_rule"
         }
-      }
+      },
+      "impact": "TBD"
     }
-  ]
+  ],
+  "impact_model": {
+    "levels": [
+      {
+        "id": "criterion",
+        "meaning": "Affects only this specific criterion."
+      },
+      {
+        "id": "dimension",
+        "meaning": "Affects the broader lens this criterion belongs to."
+      },
+      {
+        "id": "journey",
+        "meaning": "Affects the broader customer journey stage this criterion belongs to."
+      },
+      {
+        "id": "cross_journey",
+        "meaning": "Affects more than one journey stage."
+      },
+      {
+        "id": "system",
+        "meaning": "Affects the system as a whole."
+      }
+    ],
+    "note": "Scope labels per Design Spec section 12. No per-criterion impact assignments are given in either source document or in the five-decisions message -- criteria[*].impact is TBD for all 51 criteria pending that assignment."
+  }
 }

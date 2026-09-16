@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://everjourneys.ai/schemas/evercompass/src-diagnostic.schema.json",
   "title": "EverCompass Diagnostic Definition (src/definitions/diagnostic.json)",
-  "description": "Validates the diagnostic definition actually consumed by src/engine. Five fields are allowed to be the literal string \"TBD\" OR a future-defined object (see the tbdOrRule/tbdOrMethod/tbdOrFormula defs below) so that filling in the real EverCompass methodology later is a value change, not a schema or engine restructuring: severity_model.derivation_rule, finding_model.generation_rule, aggregation.dimension.method, aggregation.journey.method, priority.scoring_formula. The object branch is intentionally unconstrained -- this schema does not predict or encode what that future rule will look like, since doing so would itself be inventing structure for proprietary logic that hasn't been decided yet.",
+  "description": "Validates the diagnostic definition consumed by src/engine. As of this revision, finding_model.generation_rule, severity_model.derivation_rule, aggregation.dimension.method, aggregation.journey.method, and priority.scoring_formula are RESOLVED (real declarative rule objects, not \"TBD\"). A new dependency they introduced -- criteria[*].impact -- is itself still TBD for all 51 criteria, since no per-criterion impact assignment exists in any source document. Several interpretive sub-terms inside the resolved rules (e.g. 'high-impact criterion', 'meaningful issues') are also still open and are typed permissively so they can hold either the literal string \"TBD\" or a future resolved value without a schema change.",
   "type": "object",
   "required": [
     "diagnostic_id", "name", "version", "status",
     "journey_stages", "dimensions",
     "response_model", "applicability_model", "classification_model",
-    "severity_model", "finding_model", "rule_types",
+    "severity_model", "finding_model", "impact_model", "rule_types",
     "aggregation", "priority", "criteria"
   ],
   "additionalProperties": false,
@@ -91,6 +91,21 @@
       }
     },
 
+    "impact_model": {
+      "type": "object",
+      "required": ["levels"],
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/idMeaningEntry" },
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "note": { "type": "string" }
+      }
+    },
+
     "severity_model": {
       "type": "object",
       "required": ["levels", "derivation_rule"],
@@ -102,7 +117,7 @@
           "minItems": 4,
           "maxItems": 4
         },
-        "derivation_rule": { "$ref": "#/$defs/tbdOrRule" },
+        "derivation_rule": { "$ref": "#/$defs/classificationImpactMatrixRule" },
         "note": { "type": "string" }
       }
     },
@@ -131,7 +146,7 @@
             "severity": { "$ref": "#/$defs/fieldSpec" }
           }
         },
-        "generation_rule": { "$ref": "#/$defs/tbdOrRule" },
+        "generation_rule": { "$ref": "#/$defs/classificationMappingRule" },
         "note": { "type": "string" }
       }
     },
@@ -160,8 +175,8 @@
       "required": ["dimension", "journey", "overall_score", "overall_score_note"],
       "additionalProperties": false,
       "properties": {
-        "dimension": { "$ref": "#/$defs/aggregationMethod" },
-        "journey": { "$ref": "#/$defs/aggregationMethod" },
+        "dimension": { "$ref": "#/$defs/aggregationSection" },
+        "journey": { "$ref": "#/$defs/aggregationSection" },
         "overall_score": {
           "const": null,
           "description": "Settled, not TBD: ADR-009 -- V1 has no overall score, ever."
@@ -182,7 +197,7 @@
         "signals": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
         "precedence_order": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
         "tie_breakers": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "scoring_formula": { "$ref": "#/$defs/tbdOrRule" },
+        "scoring_formula": { "$ref": "#/$defs/weightedProductRule" },
         "root_cause_statuses": {
           "type": "array",
           "items": {
@@ -243,36 +258,197 @@
       "additionalProperties": false,
       "properties": {
         "score": { "type": "integer", "minimum": 1, "maximum": 5 },
-        "classification": {
-          "type": "string",
-          "enum": ["needs_attention", "developing", "strong", "operationalized"]
-        },
+        "classification": { "$ref": "#/$defs/classification" },
         "meaning": { "type": "string", "minLength": 1 }
       }
     },
 
-    "aggregationMethod": {
+    "classification": {
+      "type": "string",
+      "enum": ["needs_attention", "developing", "strong", "operationalized"]
+    },
+
+    "dominantCondition": {
+      "description": "The six-level dominant-condition scale a Dimension/Journey Result is assigned (decisions 3-4) -- distinct from the four-level per-criterion classification scale.",
+      "type": "string",
+      "enum": ["critical", "high", "moderate", "developing", "strong", "operationalized"]
+    },
+
+    "severityLevel": { "type": "string", "enum": ["low", "moderate", "high", "critical"] },
+
+    "impactLevel": { "type": "string", "enum": ["criterion", "dimension", "journey", "cross_journey", "system"] },
+
+    "pendingOrValue": {
+      "description": "Either still-undefined (the literal string \"TBD\") or a resolved value of any shape -- deliberately unconstrained on the resolved side so filling this in later never requires a schema change.",
+      "not": { "type": "null" }
+    },
+
+    "classificationMappingRule": {
+      "type": "object",
+      "required": ["type", "mapping", "not_applicable_result"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "classification_mapping" },
+        "mapping": {
+          "type": "object",
+          "required": ["needs_attention", "developing", "strong", "operationalized"],
+          "additionalProperties": false,
+          "properties": {
+            "needs_attention": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+            "developing": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+            "strong": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+            "operationalized": { "type": "string", "enum": ["issue", "opportunity", "strength"] }
+          }
+        },
+        "not_applicable_result": { "const": null },
+        "opportunity_note": { "type": "string" }
+      }
+    },
+
+    "classificationImpactMatrixRule": {
+      "type": "object",
+      "required": ["type", "matrix", "none_meaning", "depends_on"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "classification_impact_matrix" },
+        "matrix": {
+          "type": "object",
+          "required": ["needs_attention", "developing", "strong", "operationalized"],
+          "additionalProperties": false,
+          "properties": {
+            "needs_attention": { "$ref": "#/$defs/impactSeverityRow" },
+            "developing": { "$ref": "#/$defs/impactSeverityRow" },
+            "strong": { "$ref": "#/$defs/impactSeverityRow" },
+            "operationalized": { "$ref": "#/$defs/impactSeverityRow" }
+          }
+        },
+        "none_meaning": { "type": "string" },
+        "depends_on": { "type": "string" }
+      }
+    },
+
+    "impactSeverityRow": {
+      "type": "object",
+      "required": ["criterion", "dimension", "journey", "cross_journey", "system"],
+      "additionalProperties": false,
+      "properties": {
+        "criterion": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "dimension": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "journey": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "cross_journey": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "system": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] }
+      }
+    },
+
+    "conditionPredicate": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "conditionRuleEntry": {
+      "type": "object",
+      "required": ["condition", "match", "conditions"],
+      "additionalProperties": false,
+      "properties": {
+        "condition": { "$ref": "#/$defs/dominantCondition" },
+        "match": { "type": "string", "enum": ["any", "all"] },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/conditionPredicate" },
+          "minItems": 1
+        }
+      }
+    },
+
+    "aggregationSection": {
       "type": "object",
       "required": ["method", "preserves", "note"],
       "additionalProperties": false,
       "properties": {
-        "method": { "$ref": "#/$defs/tbdOrRule" },
+        "method": { "$ref": "#/$defs/conditionRulesRule" },
         "preserves": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
         "note": { "type": "string" }
       }
     },
 
-    "tbdOrRule": {
-      "description": "Either the literal string \"TBD\" (current state for all five undefined decisions) or, once the methodology owner defines the real rule, an object. Deliberately unconstrained as an object -- this schema does not predict the future rule's shape.",
-      "oneOf": [
-        { "const": "TBD" },
-        { "type": "object" }
-      ]
+    "conditionRulesRule": {
+      "type": "object",
+      "required": ["type", "condition_rules"],
+      "properties": {
+        "type": { "const": "condition_rules" },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "condition_rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/conditionRuleEntry" },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "evaluation_order_note": { "type": "string" },
+        "excludes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "weightedProductRule": {
+      "type": "object",
+      "required": [
+        "type", "formula", "severity_weights", "impact_weights",
+        "concentration_weights", "journey_relevance_weights",
+        "max_theoretical_score", "usage", "depends_on"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "weighted_product" },
+        "formula": { "type": "string", "minLength": 1 },
+        "severity_weights": {
+          "type": "object",
+          "required": ["low", "moderate", "high", "critical"],
+          "additionalProperties": false,
+          "properties": {
+            "low": { "type": "integer" }, "moderate": { "type": "integer" },
+            "high": { "type": "integer" }, "critical": { "type": "integer" }
+          }
+        },
+        "impact_weights": {
+          "type": "object",
+          "required": ["criterion", "dimension", "journey", "cross_journey", "system"],
+          "additionalProperties": false,
+          "properties": {
+            "criterion": { "type": "integer" }, "dimension": { "type": "integer" },
+            "journey": { "type": "integer" }, "cross_journey": { "type": "integer" },
+            "system": { "type": "integer" }
+          }
+        },
+        "concentration_weights": {
+          "type": "object",
+          "required": ["isolated", "repeated", "concentrated", "systemic"],
+          "additionalProperties": false,
+          "properties": {
+            "isolated": { "type": "integer" }, "repeated": { "type": "integer" },
+            "concentrated": { "type": "integer" }, "systemic": { "type": "integer" }
+          }
+        },
+        "journey_relevance_weights": {
+          "type": "object",
+          "required": ["low", "moderate", "high", "critical"],
+          "additionalProperties": false,
+          "properties": {
+            "low": { "type": "integer" }, "moderate": { "type": "integer" },
+            "high": { "type": "integer" }, "critical": { "type": "integer" }
+          }
+        },
+        "max_theoretical_score": { "type": "integer", "const": 320 },
+        "usage": { "type": "string" },
+        "depends_on": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "relationship_to_precedence_order": { "type": "string" }
+      }
     },
 
     "criterion": {
       "type": "object",
-      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity"],
+      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity", "impact"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -340,11 +516,18 @@
                 "ref": {
                   "type": "string",
                   "const": "severity_model.derivation_rule",
-                  "description": "Points at the one shared, currently-TBD severity rule rather than repeating 'TBD' 51 times."
+                  "description": "Points at the one shared severity rule rather than repeating it 51 times."
                 }
               }
             }
           }
+        },
+        "impact": {
+          "description": "Either \"TBD\" (current state for all 51 criteria) or one of the five impact levels once assigned.",
+          "oneOf": [
+            { "const": "TBD" },
+            { "$ref": "#/$defs/impactLevel" }
+          ]
         }
       }
     }
