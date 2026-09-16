@@ -1,8 +1,11 @@
 """
-Golden test runner. See tests/golden/GOLDEN_TEST_SPEC.md for the full
-format, coverage table, and why several fixtures are currently
-*expected* to fail against the engine (it's incomplete by design --
-see ENGINE_STATUS.md -- not a bug in these fixtures).
+Golden test runner. See tests/golden/GOLDEN_TEST_SPEC.md for format
+and coverage. The engine is now implemented (finding generation,
+severity, dimension/journey aggregation, concentration, priority) --
+full-assessment-tier fixtures get real field-by-field comparisons.
+Concentration is fixed at "isolated" for v1.0 (semantic grouping
+deferred, see src/engine/concentration.py), so no "competing priority
+candidates" fixture exists -- see GOLDEN_TEST_SPEC.md's Known Gap.
 """
 
 import glob
@@ -85,13 +88,10 @@ class ValidationTierGoldenTests(unittest.TestCase):
 
 
 class FullAssessmentTierGoldenTests(unittest.TestCase):
-    """Fixtures with expect == 'result'. Each expected_result is the TARGET
-    output per the frozen v1.0 methodology. Running these against today's
-    engine is expected to raise UndefinedDiagnosticRuleError specifically
-    (generate_findings()/generate_priorities() are still stubs -- see
-    ENGINE_STATUS.md) -- that is asserted explicitly below, not hidden.
-    Once the engine implements finding/priority generation, this same test
-    starts comparing actual vs. expected_result with no changes needed."""
+    """Fixtures with expect == 'result'. The engine now implements finding
+    generation, severity, dimension/journey aggregation, concentration, and
+    priority scoring/ordering -- these fixtures get a full field-by-field
+    comparison against the real evaluate() output."""
 
     @classmethod
     def setUpClass(cls):
@@ -108,30 +108,19 @@ class FullAssessmentTierGoldenTests(unittest.TestCase):
                 assert_matches_result_shape(self, fixture["expected_result"])
 
     def test_full_assessment_fixtures_against_the_current_engine(self):
+        from engine.serialize import to_dict
+
         for name, fixture in self.fixtures.items():
             with self.subTest(fixture=name):
                 responses = to_responses(fixture["responses"])
-                try:
-                    result = evaluate(self.definition, responses, f"asm_{name}", fixture["diagnostic_version"])
-                except engine_errors.UndefinedDiagnosticRuleError:
-                    # Expected today: finding_model.generation_rule (and
-                    # priority.scoring_formula) are no longer "TBD", and the
-                    # stub raises rather than silently using stale behavior.
-                    # This is the correct current state, not a failure.
-                    continue
-                else:
-                    # Engine has since been implemented for real -- do the
-                    # actual comparison this fixture exists for.
-                    from engine.serialize import to_dict
-                    actual = to_dict(result)
-                    self.assertEqual(
-                        actual["criterion_results"], fixture["expected_result"]["criterion_results"],
-                        f"{name}: criterion_results mismatch now that the engine is implemented",
-                    )
-                    self.assertEqual(
-                        actual["findings"], fixture["expected_result"]["findings"],
-                        f"{name}: findings mismatch now that the engine is implemented",
-                    )
+                result = evaluate(self.definition, responses, f"asm_{name}", fixture["diagnostic_version"])
+                actual = to_dict(result)
+                expected = fixture["expected_result"]
+                for key in (
+                    "criterion_results", "findings", "dimensions", "journey_stages",
+                    "priorities", "system_summary",
+                ):
+                    self.assertEqual(actual[key], expected[key], f"{name}: {key} mismatch")
 
 
 class GoldenFixtureInventoryTests(unittest.TestCase):

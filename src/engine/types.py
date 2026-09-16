@@ -53,28 +53,43 @@ class AggregateResult:
     """
     A Dimension Result or Journey Result (Design Spec sections 13-14).
 
-    Deliberately has no single reduced "classification" field -- see
-    DECISIONS.md ADR-009 and the diagnostic definition's
-    aggregation.dimension.method / aggregation.journey.method, both
-    TBD. This holds only what's mechanically computable: which
-    criteria/findings belong to this group, and a tally of
-    classifications actually observed.
+    Never a single reduced score across the whole business (ADR-009).
+    dominant_condition is the per-dimension/per-journey six-tier
+    condition (or "no_data") produced by aggregation.dimension.method /
+    aggregation.journey.method's condition_rules -- a condition per
+    dimension/journey is explicitly part of the frozen v1.0 methodology
+    (Design Spec section 13's own example shows exactly this), not a
+    reversal of ADR-009, which only rules out one score for the entire
+    business.
     """
 
     criteria: list[str] = field(default_factory=list)
     findings: list[str] = field(default_factory=list)
     classification_distribution: dict[str, int] = field(default_factory=dict)
+    dominant_condition: str = "no_data"
 
 
 @dataclass(frozen=True)
 class Priority:
-    """Design Spec section 16."""
+    """
+    Design Spec section 16. One Priority per issue-type finding in v1
+    (concentration is deferred -- see concentration.py -- so every
+    finding is its own "isolated" group of one; there is no multi-
+    finding grouping yet).
+
+    priority_score is the internal ordering mechanism (severity_weight
+    x impact_weight x concentration_weight x journey_relevance_weight)
+    -- explicitly not an "EverCompass Score" or business health score
+    (that would be a single number for the whole business; this is
+    scoped to one specific priority).
+    """
 
     priority_id: str
     title: str
     supporting_findings: list[str]
     journey_stages: list[str]
     dimensions: list[str]
+    priority_score: int
 
 
 @dataclass(frozen=True)

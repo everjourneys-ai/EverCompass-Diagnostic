@@ -1441,7 +1441,722 @@
         "dominant_condition": "critical"
       }
     },
-    "priorities": [],
+    "priorities": [
+      {
+        "priority_id": "P-001",
+        "title": "audience",
+        "supporting_findings": [
+          "F-001"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 60
+      },
+      {
+        "priority_id": "P-002",
+        "title": "crm",
+        "supporting_findings": [
+          "F-048"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 60
+      },
+      {
+        "priority_id": "P-003",
+        "title": "customer_data",
+        "supporting_findings": [
+          "F-051"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 60
+      },
+      {
+        "priority_id": "P-004",
+        "title": "attribution",
+        "supporting_findings": [
+          "F-012"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-005",
+        "title": "tracking",
+        "supporting_findings": [
+          "F-011"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-006",
+        "title": "conversion_tracking",
+        "supporting_findings": [
+          "F-039"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-007",
+        "title": "follow_up",
+        "supporting_findings": [
+          "F-038"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-008",
+        "title": "lead_routing",
+        "supporting_findings": [
+          "F-037"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-009",
+        "title": "analytics",
+        "supporting_findings": [
+          "F-024"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-010",
+        "title": "crm_connection",
+        "supporting_findings": [
+          "F-026"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-011",
+        "title": "data_capture",
+        "supporting_findings": [
+          "F-025"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-012",
+        "title": "lifecycle_strategy",
+        "supporting_findings": [
+          "F-042"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-013",
+        "title": "automation",
+        "supporting_findings": [
+          "F-049"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-014",
+        "title": "lifecycle_communication",
+        "supporting_findings": [
+          "F-050"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-015",
+        "title": "awareness",
+        "supporting_findings": [
+          "F-008"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-016",
+        "title": "acquisition",
+        "supporting_findings": [
+          "F-004"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-017",
+        "title": "acquisition_infrastructure",
+        "supporting_findings": [
+          "F-013"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-018",
+        "title": "decision_confidence",
+        "supporting_findings": [
+          "F-036"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-019",
+        "title": "conversion_strategy",
+        "supporting_findings": [
+          "F-027"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-020",
+        "title": "conversion_paths",
+        "supporting_findings": [
+          "F-030"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-021",
+        "title": "trust",
+        "supporting_findings": [
+          "F-020"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-022",
+        "title": "offer",
+        "supporting_findings": [
+          "F-014"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-023",
+        "title": "customer_value",
+        "supporting_findings": [
+          "F-040"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-024",
+        "title": "retention",
+        "supporting_findings": [
+          "F-041"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 27
+      },
+      {
+        "priority_id": "P-025",
+        "title": "differentiation",
+        "supporting_findings": [
+          "F-009"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-026",
+        "title": "messaging",
+        "supporting_findings": [
+          "F-010"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-027",
+        "title": "positioning",
+        "supporting_findings": [
+          "F-002"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-028",
+        "title": "credibility",
+        "supporting_findings": [
+          "F-035"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-029",
+        "title": "value_communication",
+        "supporting_findings": [
+          "F-034"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-030",
+        "title": "offer",
+        "supporting_findings": [
+          "F-028"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-031",
+        "title": "sales_alignment",
+        "supporting_findings": [
+          "F-029"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-032",
+        "title": "brand_experience",
+        "supporting_findings": [
+          "F-023"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-033",
+        "title": "clarity",
+        "supporting_findings": [
+          "F-021"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-034",
+        "title": "relevance",
+        "supporting_findings": [
+          "F-022"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-035",
+        "title": "value_proposition",
+        "supporting_findings": [
+          "F-015"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-036",
+        "title": "continued_brand_relevance",
+        "supporting_findings": [
+          "F-047"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-037",
+        "title": "loyalty",
+        "supporting_findings": [
+          "F-046"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-038",
+        "title": "relationship",
+        "supporting_findings": [
+          "F-045"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-039",
+        "title": "customer_experience",
+        "supporting_findings": [
+          "F-043"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 12
+      },
+      {
+        "priority_id": "P-040",
+        "title": "channels",
+        "supporting_findings": [
+          "F-003"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-041",
+        "title": "discovery_experience",
+        "supporting_findings": [
+          "F-005"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-042",
+        "title": "entry_points",
+        "supporting_findings": [
+          "F-007"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-043",
+        "title": "landing_pages",
+        "supporting_findings": [
+          "F-006"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-044",
+        "title": "booking",
+        "supporting_findings": [
+          "F-032"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-045",
+        "title": "checkout",
+        "supporting_findings": [
+          "F-033"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-046",
+        "title": "forms",
+        "supporting_findings": [
+          "F-031"
+        ],
+        "journey_stages": [
+          "convert"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-047",
+        "title": "content_strategy",
+        "supporting_findings": [
+          "F-016"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-048",
+        "title": "information",
+        "supporting_findings": [
+          "F-019"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-049",
+        "title": "navigation",
+        "supporting_findings": [
+          "F-018"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-050",
+        "title": "website_experience",
+        "supporting_findings": [
+          "F-017"
+        ],
+        "journey_stages": [
+          "engage"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      },
+      {
+        "priority_id": "P-051",
+        "title": "account_service_interactions",
+        "supporting_findings": [
+          "F-044"
+        ],
+        "journey_stages": [
+          "retain"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      }
+    ],
     "system_summary": {
       "criteria_total": 51,
       "criteria_applicable": 51,
@@ -1453,7 +2168,7 @@
         "moderate": 15,
         "low": 12
       },
-      "priority_count": 0,
+      "priority_count": 51,
       "journeys_requiring_attention": [
         "attract",
         "engage",

@@ -1443,7 +1443,22 @@
         "dominant_condition": "strong"
       }
     },
-    "priorities": [],
+    "priorities": [
+      {
+        "priority_id": "P-001",
+        "title": "audience",
+        "supporting_findings": [
+          "F-001"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "marketing_strategy"
+        ],
+        "priority_score": 60
+      }
+    ],
     "system_summary": {
       "criteria_total": 51,
       "criteria_applicable": 51,
@@ -1455,7 +1470,7 @@
         "moderate": 0,
         "low": 0
       },
-      "priority_count": 0,
+      "priority_count": 1,
       "journeys_requiring_attention": [
         "attract"
       ],

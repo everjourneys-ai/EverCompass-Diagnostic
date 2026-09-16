@@ -28,12 +28,22 @@ class EndToEndEngineTests(unittest.TestCase):
         self.assertEqual(result.engine_version, ENGINE_VERSION)
         self.assertEqual(len(result.criterion_results), 51)
 
-        # findings/priorities are stubbed empty -- see ENGINE_STATUS.md
-        self.assertEqual(result.findings, [])
-        self.assertEqual(result.priorities, [])
+        # varied_responses() cycles 1-5, so every classification band is hit
+        # -- findings and priorities are real now that the engine is implemented.
+        self.assertEqual(len(result.findings), 51)  # every criterion is applicable -> one finding each
+        self.assertGreater(len(result.priorities), 0)
+        self.assertTrue(all(p.priority_score > 0 for p in result.priorities))
+        # priorities are exactly the issue-type findings (needs_attention/developing)
+        issue_findings = [f for f in result.findings if f.type == "issue"]
+        self.assertEqual(len(result.priorities), len(issue_findings))
+        # sorted by priority_score descending
+        scores = [p.priority_score for p in result.priorities]
+        self.assertEqual(scores, sorted(scores, reverse=True))
 
         self.assertEqual(set(result.dimensions.keys()), {"marketing_strategy", "ux_design", "brand_identity", "systems_integration"})
         self.assertEqual(set(result.journey_stages.keys()), {"attract", "engage", "convert", "retain"})
+        self.assertTrue(all(agg.dominant_condition != "" for agg in result.dimensions.values()))
+        self.assertTrue(all(agg.dominant_condition != "" for agg in result.journey_stages.values()))
 
         # every criterion is accounted for exactly once across dimensions,
         # and exactly once across journey stages
@@ -45,8 +55,8 @@ class EndToEndEngineTests(unittest.TestCase):
         self.assertEqual(result.system_summary.criteria_total, 51)
         self.assertEqual(result.system_summary.criteria_applicable, 51)
         self.assertEqual(result.system_summary.criteria_not_applicable, 0)
-        self.assertEqual(result.system_summary.findings_total, 0)
-        self.assertEqual(result.system_summary.priority_count, 0)
+        self.assertEqual(result.system_summary.findings_total, 51)
+        self.assertEqual(result.system_summary.priority_count, len(result.priorities))
 
     def test_not_applicable_criteria_excluded_from_applicable_count(self):
         responses = all_applicable_responses(self.definition, value=4)

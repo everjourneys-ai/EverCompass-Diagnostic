@@ -1,26 +1,30 @@
 """
 Priority generation and ordering (Design Spec v1.0 sections 16-18).
 
-Two genuinely different operations live here, and only one of them is
-actually defined:
+Two genuinely different operations live here:
 
-1. IDENTIFYING priorities -- grouping related findings into a named
-   Priority in the first place. This needs pattern/concentration
-   detection (section 15) and an explicit-relationship map (section
-   18), neither of which exists anywhere in the source documents, plus
-   priority.scoring_formula, which diagnostic.json marks TBD. Stubbed.
+1. IDENTIFYING priorities -- now implemented for v1.0. Per Decision 1
+   (this session), semantic relatedness grouping is deferred, so every
+   issue-type finding is its own isolated Priority of one (see
+   concentration.py). priority_score is the declarative weighted
+   product (severity_weight x impact_weight x concentration_weight x
+   journey_relevance_weight), all four weight tables read generically
+   from priority.scoring_formula -- nothing hardcoded.
 
 2. ORDERING already-identified priorities against each other. Section
-   17 gives this as a concrete, fully-specified precedence rule (a
-   tiered comparison, not a numeric formula) -- implemented for real
-   below as order_priorities(), and independently testable with
-   synthetic signal inputs even while (1) is stubbed.
+   17's qualitative precedence rule is implemented as order_priorities()
+   and stays untouched/independently testable. For v1.0,
+   generate_priorities() orders by the numeric priority_score instead
+   (descending), which is what the PRIORITY MODEL decision established
+   as canonical for v1 -- with an explicit, deterministic tie-break
+   (ascending criterion_id) rather than relying on input order.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .concentration import determine_concentration
 from .errors import UndefinedDiagnosticRuleError
 from .types import Finding, Priority
 
@@ -101,13 +105,85 @@ def order_priorities(candidates: list[PrioritySignals]) -> list[Priority]:
     return [s.priority for s in ordered]
 
 
+def _criterion_journey_relevance(definition: dict, criterion_id: str) -> str:
+    by_id = {c["id"]: c for c in definition["criteria"]}
+    return by_id[criterion_id]["journey_relevance"]
+
+
+def compute_priority_score(definition: dict, finding: Finding, concentration_weight: int) -> int:
+    """priority_score = severity_weight x impact_weight x concentration_weight
+    x journey_relevance_weight. All four tables read from
+    priority.scoring_formula -- nothing hardcoded."""
+    formula = definition["priority"]["scoring_formula"]
+    by_id = {c["id"]: c for c in definition["criteria"]}
+    impact = by_id[finding.criterion_id]["impact"]
+    journey_relevance = by_id[finding.criterion_id]["journey_relevance"]
+
+    severity_weight = formula["severity_weights"][finding.severity]
+    impact_weight = formula["impact_weights"][impact]
+    journey_relevance_weight = formula["journey_relevance_weights"][journey_relevance]
+
+    return severity_weight * impact_weight * concentration_weight * journey_relevance_weight
+
+
 def generate_priorities(definition: dict, findings: list[Finding]) -> list[Priority]:
+    """
+    One Priority per issue-type finding (Decision 1: concentration is
+    deferred, so no finding is grouped with any other -- each is its
+    own isolated priority candidate). Findings of type strength/
+    opportunity don't "warrant attention" (Design Spec section 16) and
+    are not turned into priorities.
+
+    Ordered by priority_score descending; ties broken by ascending
+    criterion_id (deterministic, based on existing result data --
+    never insertion order or randomness).
+    """
     rule = definition.get("priority", {}).get("scoring_formula")
     if rule == "TBD":
-        return []
-    raise UndefinedDiagnosticRuleError(
-        "priority.scoring_formula is no longer 'TBD' but generate_priorities() "
-        "has no interpreter for it yet, and no pattern/relationship map exists "
-        "to group findings into priorities in the first place. Update this "
-        "function before relying on this definition's priorities."
-    )
+        raise UndefinedDiagnosticRuleError(
+            "priority.scoring_formula is still 'TBD' in this definition -- "
+            "cannot generate priorities."
+        )
+
+    scored: list[tuple[Priority, int, str]] = []
+    n = 0
+    for finding in findings:
+        if finding.type != "issue":
+            continue
+        n += 1
+        concentration = determine_concentration(finding, findings, definition)
+        score = compute_priority_score(definition, finding, concentration.weight)
+        priority = Priority(
+            priority_id=f"P-{n:03d}",
+            title=_finding_title(definition, finding),
+            supporting_findings=[finding.finding_id],
+            journey_stages=[finding.journey_stage],
+            dimensions=[finding.dimension],
+            priority_score=score,
+        )
+        scored.append((priority, score, finding.criterion_id))
+
+    scored.sort(key=lambda row: (-row[1], row[2]))
+
+    # Re-number priority_id in final (sorted) order so P-001 is always
+    # the top priority -- deterministic given the stable sort above.
+    ordered: list[Priority] = []
+    for i, (priority, _score, _cid) in enumerate(scored, start=1):
+        ordered.append(Priority(
+            priority_id=f"P-{i:03d}",
+            title=priority.title,
+            supporting_findings=priority.supporting_findings,
+            journey_stages=priority.journey_stages,
+            dimensions=priority.dimensions,
+            priority_score=priority.priority_score,
+        ))
+    return ordered
+
+
+def _finding_title(definition: dict, finding: Finding) -> str:
+    """finding_ref is already an approved, existing naming convention
+    (diagnostic.json's criteria[*].finding.finding_ref) -- reused here
+    rather than composing new recommendation-adjacent prose, which is
+    not part of the frozen v1.0 methodology."""
+    by_id = {c["id"]: c for c in definition["criteria"]}
+    return by_id[finding.criterion_id]["finding"]["finding_ref"]

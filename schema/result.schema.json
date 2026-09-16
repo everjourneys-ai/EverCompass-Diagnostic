@@ -138,8 +138,8 @@
     },
     "priority": {
       "type": "object",
-      "description": "Design Spec §16.",
-      "required": ["priority_id", "title", "supporting_findings", "journey_stages", "dimensions"],
+      "description": "Design Spec §16. priority_score is the internal ordering mechanism (severity_weight x impact_weight x concentration_weight x journey_relevance_weight) -- scoped to one priority, never exposed as a single business-wide score.",
+      "required": ["priority_id", "title", "supporting_findings", "journey_stages", "dimensions", "priority_score"],
       "additionalProperties": false,
       "properties": {
         "priority_id": { "type": "string" },
@@ -152,7 +152,8 @@
         "dimensions": {
           "type": "array",
           "items": { "type": "string", "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"] }
-        }
+        },
+        "priority_score": { "type": "integer", "minimum": 0 }
       }
     },
     "systemSummary": {

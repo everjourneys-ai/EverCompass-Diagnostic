@@ -1443,7 +1443,22 @@
         "dominant_condition": "strong"
       }
     },
-    "priorities": [],
+    "priorities": [
+      {
+        "priority_id": "P-001",
+        "title": "landing_pages",
+        "supporting_findings": [
+          "F-006"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "ux_design"
+        ],
+        "priority_score": 3
+      }
+    ],
     "system_summary": {
       "criteria_total": 51,
       "criteria_applicable": 51,
@@ -1455,7 +1470,7 @@
         "moderate": 0,
         "low": 1
       },
-      "priority_count": 0,
+      "priority_count": 1,
       "journeys_requiring_attention": [
         "attract"
       ],

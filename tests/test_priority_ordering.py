@@ -5,7 +5,10 @@ from engine.types import Priority
 
 
 def _priority(pid: str) -> Priority:
-    return Priority(pid, f"title-{pid}", [], [], [])
+    # priority_score is irrelevant to these tests -- they exercise
+    # order_priorities()'s qualitative precedence rule, not the numeric
+    # priority_score formula (see test_priority.py for that).
+    return Priority(pid, f"title-{pid}", [], [], [], priority_score=0)
 
 
 class OrderPrioritiesTests(unittest.TestCase):

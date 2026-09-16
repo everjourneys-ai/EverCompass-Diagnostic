@@ -1444,7 +1444,36 @@
         "dominant_condition": "strong"
       }
     },
-    "priorities": [],
+    "priorities": [
+      {
+        "priority_id": "P-001",
+        "title": "tracking",
+        "supporting_findings": [
+          "F-011"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "systems_integration"
+        ],
+        "priority_score": 36
+      },
+      {
+        "priority_id": "P-002",
+        "title": "awareness",
+        "supporting_findings": [
+          "F-008"
+        ],
+        "journey_stages": [
+          "attract"
+        ],
+        "dimensions": [
+          "brand_identity"
+        ],
+        "priority_score": 27
+      }
+    ],
     "system_summary": {
       "criteria_total": 51,
       "criteria_applicable": 51,
@@ -1456,7 +1485,7 @@
         "moderate": 0,
         "low": 0
       },
-      "priority_count": 0,
+      "priority_count": 2,
       "journeys_requiring_attention": [
         "attract"
       ],

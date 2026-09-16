@@ -14,6 +14,7 @@ def _aggregate_to_dict(agg: AggregateResult) -> dict:
         "criteria": list(agg.criteria),
         "findings": list(agg.findings),
         "summary": {"classification_distribution": dict(agg.classification_distribution)},
+        "dominant_condition": agg.dominant_condition,
     }
 
 
@@ -54,6 +55,7 @@ def to_dict(result: AssessmentResult) -> dict:
                 "supporting_findings": list(p.supporting_findings),
                 "journey_stages": list(p.journey_stages),
                 "dimensions": list(p.dimensions),
+                "priority_score": p.priority_score,
             }
             for p in result.priorities
         ],
