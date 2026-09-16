@@ -94,6 +94,74 @@ Continuing the ADR numbering from Architecture v1.2 §20 (which ends at ADR-008)
 
 ---
 
+## ADR-016 — Priority ordering: `generate_priorities()` is authoritative; `order_priorities()` is a documented, unwired legacy path
+
+**Status:** Record of current state, not a new design decision. Written during the pre-frontend-integration validation pass, after a real HTTP smoke test against the FastAPI layer surfaced and concretely demonstrated the divergence described below. No implementation code was changed to produce this ADR.
+
+### 1. Current authoritative path
+
+```
+generate_priorities()  ->  compute_priority_score()  ->  engine.evaluate()
+(src/engine/priority.py)   (src/engine/priority.py)      (src/engine/engine.py)
+```
+
+`engine.py` imports and calls `generate_priorities(definition, findings)` directly (`from .priority import generate_priorities`), and nothing else in `priority.py`. This is the only priority-ordering logic that runs in the live assessment pipeline — the one every `AssessmentResult.priorities` list (via the CLI test suite, `src/application/assessment.py`, and the FastAPI `/assess` endpoint) is actually built from.
+
+`generate_priorities()` computes one `priority_score` per issue-type finding via `compute_priority_score()` — `severity_weight × impact_weight × concentration_weight × journey_relevance_weight`, all four weight tables read from `diagnostic.json`'s `priority.scoring_formula` (nothing hardcoded) — and sorts descending by that single integer, with an explicit ascending-`criterion_id` tie-break.
+
+### 2. Legacy/alternative path
+
+```
+order_priorities()  ->  PrioritySignals  ->  qualitative tier ordering (_tier() / _SEVERITY_TIER)
+```
+
+All defined in `src/engine/priority.py` (lines ~31–105 as of this writing). Referenced exactly here in the repository, confirmed by a full-repo search:
+
+- `tests/test_priority_ordering.py` — its own dedicated unit test file, exercising it directly with hand-constructed `PrioritySignals`.
+- `ENGINE_STATUS.md`'s "Known internal inconsistency" section (added in the pre-API hardening pass).
+- `priority.py`'s own module docstring and inline comments.
+
+It is **not** imported or called from `engine.py`, `src/application/*`, or `src/api/*` — confirmed by grep across the full repository (zero matches outside `priority.py` itself, its docstrings, `tests/test_priority_ordering.py`, and documentation).
+
+### 3. Why both exist
+
+Established directly from git history (`git log --follow -- src/engine/priority.py`; two commits touch this file, and only these two):
+
+- **`order_priorities()` came first.** It was introduced in commit `c44f078` ("Add first-draft deterministic Assessment Engine"), implementing Design Spec §17's precedence rule exactly as written there — a qualitative, tiered comparison (critical > high-with-broad-impact > high > moderate-with-concentration > moderate > low), not a numeric formula. At that point the file's own docstring stated plainly: *"Two genuinely different operations live here, and only one of them is actually defined"* — priority **identification** (grouping findings into a Priority) was an explicit stub, because `diagnostic.json`'s `priority.scoring_formula` was still `"TBD"` and no relationship/pattern map existed to group findings in the first place.
+- **`generate_priorities()`/`compute_priority_score()` were added second**, in commit `6b42db2` ("Implement the deterministic Assessment Engine for EverCompass v1.0"), once `priority.scoring_formula` was resolved to a concrete `weighted_product` formula in `diagnostic.json`. This is the commit that made priority *identification* (not just ordering) computable end-to-end, and it changed `generate_priorities()` from a stub into the real implementation described above.
+- **The commit that made the weighted model authoritative** is `6b42db2` itself: its diff to `priority.py`'s module docstring states outright that `generate_priorities()` ordering by `priority_score` "is what the **PRIORITY MODEL decision** established as canonical for v1" (still the exact wording in the current file, line 18). This is the only place in the repository that names a "PRIORITY MODEL decision" — **there is no separate persisted document, numbered ADR, or DECISIONS.md entry establishing that decision beyond this commit and this code comment.** This ADR does not invent one; it records that the decision is attested only in code, not in a standalone artifact.
+- **`order_priorities()` was never formally retired.** Commit `6b42db2`'s own message describes it as continuing to "stay untouched/independently testable" rather than being removed, deprecated, or marked obsolete. `diagnostic.json`'s `priority.scoring_formula.relationship_to_precedence_order` field (present since the same commit) states: *"This numeric formula operationalizes the qualitative precedence_order/tie_breakers above (Design Spec section 17) into a single sortable number; both describe the same v1 priority principle, not two competing ones."* That is the diagnostic definition's own stated intent — that the two are meant to agree in principle. Section 4 below documents that, as implemented, they do not always agree in practice. No commit or document resolves that gap; it is unaddressed, not merely unresolved-by-omission.
+
+### 4. Behavioral difference (concretely demonstrated, not theoretical)
+
+During the post-implementation HTTP smoke test, two real findings were run through the actual engine: one on a criterion with `impact: "journey"`, one with `impact: "cross_journey"`, both landing on `severity: "high"`.
+
+- `generate_priorities()` computed `priority_score` 27 (journey: 3×3×1×3) and 36 (cross_journey: 3×4×1×3), and **always** ranked the cross_journey finding above the journey finding — it distinguishes them by `impact_weight`, deterministically, regardless of input order.
+- `order_priorities()`, given the same two findings translated into `PrioritySignals`, placed both in severity tier 3 ("high", not broad/concentrated — `broad_or_concentrated_impact` is not derived from `criteria[*].impact` anywhere in this codebase) with identical tie-break values. It could not distinguish them at all: the two orderings tested, `[journey-first, cross_journey-first]` input vs. its reverse, produced **opposite** output orders (`[P-002, P-001]` vs. `[P-001, P-002]`) — a tie broken only by input order, not by any signal `order_priorities()` itself defines.
+
+This is the concrete form of the gap ADR-016 §3's `relationship_to_precedence_order` note leaves open: `order_priorities()`'s required inputs (`broad_or_concentrated_impact`, `meaningful_concentration`, `explicit_relationship_breadth`) are not derived from a real `Finding`/`Priority` anywhere in this repository. No function exists that computes `PrioritySignals` from engine output. Consequently the two implementations are not interchangeable today, and `order_priorities()` cannot currently be substituted into the live pipeline without first writing that derivation logic — which would mean defining, among other things, what "broad or concentrated impact" and "meaningful concentration" mean over real criteria, and (per ADR entries above) what makes a set of findings "related" in the first place, none of which any source document defines.
+
+### 5. Current decision
+
+For the current EverCompass Diagnostic v1.0.0 implementation, **`generate_priorities()` is authoritative**. It is the only priority-ordering logic reachable from `engine.evaluate()`, and therefore the only one that determines `AssessmentResult.priorities` for any assessment run through the engine, the application layer, or the FastAPI `/assess` endpoint.
+
+**`order_priorities()` is not part of the live assessment pipeline.** It remains fully implemented and independently tested, but orphaned from the real call graph — a fact, not a defect, and not evidence of a bug in either function individually.
+
+### 6. Future decision required before `order_priorities()` is ever wired in
+
+Before `order_priorities()` could be connected to the live pipeline, one of the following must be explicitly decided — this ADR does not decide it:
+
+1. **Formally retire/remove `order_priorities()`, `PrioritySignals`, `_SEVERITY_TIER`, and `tests/test_priority_ordering.py`** as superseded by the weighted-product model, accepting that Design Spec §17's literal qualitative rule is no longer implemented as its own algorithm (only "operationalized" into the numeric formula, per `relationship_to_precedence_order`); or
+2. **Define and implement real signal derivation** — a function computing `broad_or_concentrated_impact`, `meaningful_concentration`, and `explicit_relationship_breadth` from actual `Finding`/`CriterionResult` data (which in turn requires resolving the still-open relationship/pattern-map dependency this and prior ADRs already flag) — making `order_priorities()` a genuine, usable alternative rather than a specification fossil.
+
+Both are methodology decisions, not engineering ones. This ADR takes neither position.
+
+### 7. Architectural constraint
+
+Whichever priority-ordering implementation is authoritative at any point must remain **deterministic** (same diagnostic version + same responses → same priority list and order, every time — no clock, randomness, or unstable sort) and **versioned with the diagnostic methodology**: a change to which model is authoritative, or to either model's behavior, is a methodology change and requires a new `diagnostic_version`, not a silent code change against an unchanged `"published"` definition (Design Spec §24; ADR-015's migration reasoning).
+
+---
+
 ## Still undefined at ADR-009–015's time of writing — historical record
 
 Per the original instruction not to invent diagnostic rules, weights, thresholds, severity mappings, recommendations, or proprietary decision logic, the following were explicit, labeled gaps in the artifacts produced by this ADR log's original pass (structurally stubbed as `null`, empty, or omitted — never filled with a guessed value). **Status as of `diagnostic.json` v1.0.0 (`published`) is annotated per item** — most have since been resolved by later, explicit decisions; two remain genuinely open and still deliberately not invented:
@@ -101,7 +169,7 @@ Per the original instruction not to invent diagnostic rules, weights, thresholds
 - **Per-criterion severity rule** (`severity.rule`) — Spec §11 explicitly forbids deriving severity as a simple function of score; no alternative rule was given at the time. **Resolved:** `severity_model.derivation_rule` is a `classification_impact_matrix` (classification × `criteria[*].impact`), assigned for all 51 criteria.
 - **Dimension/Journey/Priority aggregation logic** (`aggregation.dimension`, `.journey`, `.priority`) — Spec §13 calls this "proprietary diagnostic logic," explicitly undefined at the time. **Resolved:** `aggregation.dimension.method`/`aggregation.journey.method` are six-tier `condition_rules` (critical, high, moderate, developing, operationalized, strong); `priority.scoring_formula` is a `weighted_product`.
 - **Finding-generation trigger logic** — what score/condition/pattern actually creates a finding, and of which type (`issue`/`opportunity`/`strength`). **Resolved:** `finding_model.generation_rule` is a `classification_mapping` (needs_attention/developing → issue, strong/operationalized → strength; `opportunity` is schema-supported but never produced by this mapping — see the mapping's own `opportunity_note`).
-- **Priority precedence formula** — Spec §17 gives an ordered list of qualitative signals, not a scoring function or cutoffs. **Resolved for the ordering `generate_priorities()` actually uses:** `priority_score = severity_weight × impact_weight × concentration_weight × journey_relevance_weight`, read from `priority.scoring_formula`. (Spec §17's original qualitative precedence rule is also fully implemented, as `order_priorities()` — see `ENGINE_STATUS.md`'s "Known internal inconsistency" note for why two orderings coexist.)
+- **Priority precedence formula** — Spec §17 gives an ordered list of qualitative signals, not a scoring function or cutoffs. **Resolved for the ordering `generate_priorities()` actually uses:** `priority_score = severity_weight × impact_weight × concentration_weight × journey_relevance_weight`, read from `priority.scoring_formula`. (Spec §17's original qualitative precedence rule is also fully implemented, as `order_priorities()`, but is not part of the live pipeline — see **ADR-016** above for the full history and the concretely demonstrated divergence between the two.)
 - **Relationship/pattern map** — which criterion groupings form a "pattern" (Spec §15 gives two illustrative examples, not an exhaustive map) or count as an `explicit_relationship` for root-cause status (§18). **Still open, deliberately deferred, not invented:** `src/engine/concentration.py` fixes concentration at `"isolated"` for every finding in v1.0 rather than guess at a grouping rule neither source document specifies.
 - **Recommendation copy** (`recommendations.json`) — does not exist in either document. **Still open** — out of scope for the deterministic engine.
 - **`finding_ref` naming convention** — Spec §23's one worked example uses `"audience_definition"` for the `audience` criterion (a `_definition` suffix), not just `"audience"`. Since only one example exists and it's a reference name rather than a scoring rule, `diagnostic.json` standardizes on the criterion's own leaf slug (e.g. `"audience"`) for all 51 criteria, for consistency. This is a naming-convention choice, not business logic, and was never revisited — flagging it here still, in case the original suffix style was intentional and should be matched instead.
