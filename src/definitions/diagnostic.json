@@ -297,7 +297,9 @@
         "finding_ref": "audience"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -320,7 +322,9 @@
         "finding_ref": "positioning"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -343,7 +347,9 @@
         "finding_ref": "channels"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -366,7 +372,9 @@
         "finding_ref": "acquisition"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -389,7 +397,9 @@
         "finding_ref": "discovery_experience"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -412,7 +422,9 @@
         "finding_ref": "landing_pages"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -435,7 +447,9 @@
         "finding_ref": "entry_points"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -458,7 +472,9 @@
         "finding_ref": "awareness"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -481,7 +497,9 @@
         "finding_ref": "differentiation"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -504,7 +522,9 @@
         "finding_ref": "messaging"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -527,7 +547,9 @@
         "finding_ref": "tracking"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -550,7 +572,9 @@
         "finding_ref": "attribution"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -573,7 +597,9 @@
         "finding_ref": "acquisition_infrastructure"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -596,7 +622,9 @@
         "finding_ref": "offer"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -619,7 +647,9 @@
         "finding_ref": "value_proposition"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -642,7 +672,9 @@
         "finding_ref": "content_strategy"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -665,7 +697,9 @@
         "finding_ref": "website_experience"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -688,7 +722,9 @@
         "finding_ref": "navigation"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -711,7 +747,9 @@
         "finding_ref": "information"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -734,7 +772,9 @@
         "finding_ref": "trust"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -757,7 +797,9 @@
         "finding_ref": "clarity"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -780,7 +822,9 @@
         "finding_ref": "relevance"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -803,7 +847,9 @@
         "finding_ref": "brand_experience"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -826,7 +872,9 @@
         "finding_ref": "analytics"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -849,7 +897,9 @@
         "finding_ref": "data_capture"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -872,7 +922,9 @@
         "finding_ref": "crm_connection"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -895,7 +947,9 @@
         "finding_ref": "conversion_strategy"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -918,7 +972,9 @@
         "finding_ref": "offer"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -941,7 +997,9 @@
         "finding_ref": "sales_alignment"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -964,7 +1022,9 @@
         "finding_ref": "conversion_paths"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -987,7 +1047,9 @@
         "finding_ref": "forms"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1010,7 +1072,9 @@
         "finding_ref": "booking"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1033,7 +1097,9 @@
         "finding_ref": "checkout"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1056,7 +1122,9 @@
         "finding_ref": "value_communication"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1079,7 +1147,9 @@
         "finding_ref": "credibility"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1102,7 +1172,9 @@
         "finding_ref": "decision_confidence"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1125,7 +1197,9 @@
         "finding_ref": "lead_routing"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1148,7 +1222,9 @@
         "finding_ref": "follow_up"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1171,7 +1247,9 @@
         "finding_ref": "conversion_tracking"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1194,7 +1272,9 @@
         "finding_ref": "customer_value"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1217,7 +1297,9 @@
         "finding_ref": "retention"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1240,7 +1322,9 @@
         "finding_ref": "lifecycle_strategy"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1263,7 +1347,9 @@
         "finding_ref": "customer_experience"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1286,7 +1372,9 @@
         "finding_ref": "account_service_interactions"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1309,7 +1397,9 @@
         "finding_ref": "relationship"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1332,7 +1422,9 @@
         "finding_ref": "loyalty"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1355,7 +1447,9 @@
         "finding_ref": "continued_brand_relevance"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1378,7 +1472,9 @@
         "finding_ref": "crm"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1401,7 +1497,9 @@
         "finding_ref": "automation"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1424,7 +1522,9 @@
         "finding_ref": "lifecycle_communication"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     },
     {
@@ -1447,7 +1547,9 @@
         "finding_ref": "customer_data"
       },
       "severity": {
-        "rule": "TBD"
+        "rule": {
+          "ref": "severity_model.derivation_rule"
+        }
       }
     }
   ]
