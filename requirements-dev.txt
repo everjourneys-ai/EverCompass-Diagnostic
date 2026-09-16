@@ -1,0 +1,4 @@
+# Additional dependencies needed only to run the test suite -- fastapi's
+# TestClient requires httpx. Not needed to run the API itself.
+-r requirements.txt
+httpx>=0.28

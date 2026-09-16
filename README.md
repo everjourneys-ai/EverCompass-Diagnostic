@@ -1,4 +1,4 @@
-# EverCompass Diagnostic — Definition, Schema & Engine
+# EverCompass Diagnostic — Definition, Schema, Engine & API
 
 A deterministic, versioned business-diagnostic assessment system, built from:
 
@@ -13,6 +13,9 @@ See **`DECISIONS.md`** first — it resolves every point where the two source do
 evercompass-diagnostic/
 ├── DECISIONS.md                    # ADR-009-015: how the two source documents' contradictions were resolved
 ├── ENGINE_STATUS.md                # current status of src/engine/
+├── API.md                          # how to run/use the FastAPI layer
+├── requirements.txt                # API layer runtime deps (src/engine needs none)
+├── requirements-dev.txt            # + test-only deps (httpx, for TestClient)
 ├── schema/
 │   ├── diagnostic.schema.json      # validates src/definitions/diagnostic.json
 │   ├── response.schema.json        # validates one respondent answer
@@ -21,10 +24,14 @@ evercompass-diagnostic/
 ├── src/
 │   ├── definitions/
 │   │   └── diagnostic.json         # the frozen EverCompass Diagnostic Definition v1.0 (51 criteria)
-│   └── engine/                     # the pure, deterministic Assessment Engine (stdlib-only Python)
+│   ├── engine/                     # the pure, deterministic Assessment Engine (stdlib-only Python)
+│   ├── application/                # loads/selects a diagnostic definition, orchestrates assessment,
+│   │                                # builds the public (non-proprietary) diagnostic view
+│   └── api/                        # FastAPI layer: routing, request/response models, CORS, error mapping
 └── tests/
     ├── golden/                     # Architecture §29 golden-test fixtures + spec
-    └── test_*.py                   # unit tests
+    ├── test_*.py                   # engine unit/golden/invariant tests
+    └── test_api_*.py               # API tests (real engine, no mocking)
 ```
 
 ## Status
@@ -33,14 +40,16 @@ evercompass-diagnostic/
 
 `src/engine/` is fully implemented against v1.0: response validation, per-criterion scoring/classification, finding generation, severity derivation, dimension/journey aggregation (including dominant-condition classification), concentration (fixed at `"isolated"` for v1.0, per the decision above), and priority scoring/ordering. See `ENGINE_STATUS.md` for the module-by-module breakdown.
 
+A thin FastAPI layer (`src/api/`) and application layer (`src/application/`) now wrap the engine — see **`API.md`** for endpoints, request/response examples, error format, and how to run it locally.
+
 What's still deliberately not built, because no source document defines it and it was not invented here:
 - Semantic related-finding grouping / pattern detection (Design Spec §15) — concentration is `"isolated"` for every finding in v1.0.
 - `recommendations.json` — does not exist in either source document.
-- The FastAPI layer, Supabase persistence, and AI interpretation layer (Architecture v1.2 Phases 2-3) — this repo is the deterministic engine only.
+- Supabase persistence and the AI interpretation layer (Architecture v1.2 Phases 2-3), and authentication — none of these are part of this Phase 1 API.
 
 ## Running the tests
 
-Stdlib `unittest` only, no test dependency required:
+Engine tests are stdlib `unittest` only, no dependency required. API tests additionally need `requirements-dev.txt` installed (`pip install -r requirements-dev.txt`) — both run together with the same command:
 
 ```bash
 PYTHONPATH=src:tests python3 -m unittest discover -s tests -v
@@ -60,4 +69,9 @@ All three currently pass.
 
 ## Architectural boundary
 
-The engine (`src/engine/`) has no HTTP, database, AI, or frontend dependency (Architecture v1.2 §3) — it is a pure function of `(diagnostic definition, responses) -> AssessmentResult`. It is intended to be wrapped by a FastAPI service and an application layer, neither of which exists in this repo yet.
+```
+HTTP Request -> FastAPI (src/api) -> Application Layer (src/application) -> Assessment Engine
+(src/engine) -> Diagnostic Definition (src/definitions/diagnostic.json) -> Structured Result
+```
+
+The engine (`src/engine/`) has no HTTP, database, AI, or frontend dependency (Architecture v1.2 §3) — it is a pure function of `(diagnostic definition, responses) -> AssessmentResult`, and stays that way: `src/api/` and `src/application/` depend on `src/engine/`, never the reverse. See `API.md` for the API layer.

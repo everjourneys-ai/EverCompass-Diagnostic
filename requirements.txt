@@ -1,0 +1,5 @@
+# Runtime dependencies for the FastAPI API layer (src/api, src/application).
+# The Assessment Engine itself (src/engine) remains stdlib-only and does not
+# require anything in this file -- see src/engine/__init__.py.
+fastapi>=0.141
+uvicorn>=0.53
