@@ -1,0 +1,322 @@
+{
+  "name": "duplicate_response",
+  "category": "response",
+  "description": "The same criterion_id is submitted twice.",
+  "diagnostic_version": "1.0.0",
+  "responses": [
+    {
+      "criterion_id": "attract.marketing_strategy.audience",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.marketing_strategy.positioning",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.marketing_strategy.channels",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.marketing_strategy.acquisition",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.ux_design.discovery_experience",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.ux_design.landing_pages",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.ux_design.entry_points",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.brand_identity.awareness",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.brand_identity.differentiation",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.brand_identity.messaging",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.systems_integration.tracking",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.systems_integration.attribution",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.systems_integration.acquisition_infrastructure",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.marketing_strategy.offer",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.marketing_strategy.value_proposition",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.marketing_strategy.content_strategy",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.ux_design.website_experience",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.ux_design.navigation",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.ux_design.information",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.brand_identity.trust",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.brand_identity.clarity",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.brand_identity.relevance",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.brand_identity.brand_experience",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.systems_integration.analytics",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.systems_integration.data_capture",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "engage.systems_integration.crm_connection",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.marketing_strategy.conversion_strategy",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.marketing_strategy.offer",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.marketing_strategy.sales_alignment",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.ux_design.conversion_paths",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.ux_design.forms",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.ux_design.booking",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.ux_design.checkout",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.brand_identity.value_communication",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.brand_identity.credibility",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.brand_identity.decision_confidence",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.systems_integration.lead_routing",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.systems_integration.follow_up",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "convert.systems_integration.conversion_tracking",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.marketing_strategy.customer_value",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.marketing_strategy.retention",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.marketing_strategy.lifecycle_strategy",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.ux_design.customer_experience",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.ux_design.account_service_interactions",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.brand_identity.relationship",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.brand_identity.loyalty",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.brand_identity.continued_brand_relevance",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.systems_integration.crm",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.systems_integration.automation",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.systems_integration.lifecycle_communication",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "retain.systems_integration.customer_data",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    },
+    {
+      "criterion_id": "attract.marketing_strategy.audience",
+      "value": 4,
+      "evidence": "golden fixture evidence",
+      "applicability": "applicable"
+    }
+  ],
+  "expect": "error",
+  "expected_error": "DuplicateResponseError"
+}

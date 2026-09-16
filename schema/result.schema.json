@@ -98,8 +98,8 @@
     },
     "aggregateResult": {
       "type": "object",
-      "description": "Design Spec §13/§14: 'not a simple average'. Preserves criterion results, findings, and a classification distribution -- never a single reduced score (ADR-009).",
-      "required": ["criteria", "findings", "summary"],
+      "description": "Design Spec §13/§14: 'not a simple average'. Preserves criterion results, findings, and a classification distribution -- never a single reduced score across the whole business (ADR-009). dominant_condition is the per-dimension/per-journey six-tier condition produced by aggregation.dimension.method / aggregation.journey.method's now-resolved condition_rules (added when those rules were finalized -- this is a scope correction to the schema, not a reversal of ADR-009, which only rules out a single score for the entire business, not a condition per dimension/journey).",
+      "required": ["criteria", "findings", "summary", "dominant_condition"],
       "additionalProperties": false,
       "properties": {
         "criteria": {
@@ -128,6 +128,11 @@
               }
             }
           }
+        },
+        "dominant_condition": {
+          "type": "string",
+          "enum": ["critical", "high", "moderate", "developing", "strong", "operationalized", "no_data"],
+          "description": "Output of aggregation.dimension.method/aggregation.journey.method's condition_rules. 'no_data' is the explicit zero/insufficient-applicable-criteria edge case."
         }
       }
     },
