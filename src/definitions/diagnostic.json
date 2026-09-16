@@ -1,0 +1,1454 @@
+{
+  "diagnostic_id": "evercompass",
+  "name": "EverCompass Diagnostic",
+  "version": "1.0.0",
+  "status": "draft",
+  "journey_stages": [
+    {
+      "id": "attract",
+      "label": "Attract",
+      "description": "The customer discovers the business and becomes aware of its existence."
+    },
+    {
+      "id": "engage",
+      "label": "Engage",
+      "description": "The customer evaluates the business, its value, and its experience."
+    },
+    {
+      "id": "convert",
+      "label": "Convert",
+      "description": "The customer takes a meaningful action or becomes a customer/opportunity."
+    },
+    {
+      "id": "retain",
+      "label": "Retain",
+      "description": "The business continues the relationship and creates additional value."
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "marketing_strategy",
+      "label": "Marketing Strategy",
+      "description": "Direction and market alignment: objectives, market opportunity, audience, positioning, offers, channels, priorities, and acquisition strategy."
+    },
+    {
+      "id": "ux_design",
+      "label": "UX Design",
+      "description": "Experience and interaction: usability, navigation, information, digital experience, interactions, conversion paths, and friction."
+    },
+    {
+      "id": "brand_identity",
+      "label": "Brand Identity",
+      "description": "Meaning and expression: positioning, messaging, visual identity, verbal identity, differentiation, trust, relevance, and brand experience."
+    },
+    {
+      "id": "systems_integration",
+      "label": "Systems & Integration",
+      "description": "Infrastructure and connection: CRM, analytics, tracking, automation, data, technology, lead management, workflows, and integrations."
+    }
+  ],
+  "response_model": {
+    "type": "maturity_1_5",
+    "fields": {
+      "criterion_id": {
+        "type": "string",
+        "required": true
+      },
+      "value": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "range": [
+          1,
+          5
+        ],
+        "required": true,
+        "description": "1-5 maturity value; null only when applicability is not_applicable."
+      },
+      "evidence": {
+        "type": "string",
+        "required": true,
+        "description": "Supporting explanation. Separate from the score -- the deterministic engine does not reinterpret evidence to change the score."
+      },
+      "applicability": {
+        "type": "string",
+        "enum": [
+          "applicable",
+          "not_applicable"
+        ],
+        "required": true
+      }
+    }
+  },
+  "applicability_model": {
+    "values": [
+      "applicable",
+      "not_applicable"
+    ],
+    "effect_of_not_applicable": {
+      "score": null,
+      "classification": null,
+      "finding": null,
+      "severity": null
+    },
+    "note": "Non-applicable capabilities are not weaknesses."
+  },
+  "classification_model": {
+    "scale": "maturity_1_5",
+    "bands": [
+      {
+        "score": 1,
+        "classification": "needs_attention",
+        "meaning": "Absent / severely limited"
+      },
+      {
+        "score": 2,
+        "classification": "needs_attention",
+        "meaning": "Informal / inconsistent"
+      },
+      {
+        "score": 3,
+        "classification": "developing",
+        "meaning": "Functional / defined"
+      },
+      {
+        "score": 4,
+        "classification": "strong",
+        "meaning": "Intentional / structured"
+      },
+      {
+        "score": 5,
+        "classification": "operationalized",
+        "meaning": "Integrated / continuously improved"
+      }
+    ]
+  },
+  "severity_model": {
+    "levels": [
+      {
+        "id": "low",
+        "meaning": "Improvement opportunity with limited immediate/systemic consequence"
+      },
+      {
+        "id": "moderate",
+        "meaning": "Meaningful weakness that may constrain performance"
+      },
+      {
+        "id": "high",
+        "meaning": "Significant weakness that may materially affect the journey or connected areas"
+      },
+      {
+        "id": "critical",
+        "meaning": "Fundamental condition that may substantially prevent the relevant journey stage from functioning"
+      }
+    ],
+    "derivation_rule": "TBD",
+    "note": "Severity is separate from score and classification and must not be a simple one-to-one mapping from score (Design Spec §11). The rule that assigns severity per criterion/condition is not defined in the source documents and is not invented here."
+  },
+  "finding_model": {
+    "types": [
+      "issue",
+      "opportunity",
+      "strength"
+    ],
+    "fields": {
+      "finding_id": {
+        "type": "string",
+        "required": true
+      },
+      "criterion_id": {
+        "type": "string",
+        "required": true
+      },
+      "journey_stage": {
+        "type": "string",
+        "required": true
+      },
+      "dimension": {
+        "type": "string",
+        "required": true
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "issue",
+          "opportunity",
+          "strength"
+        ],
+        "required": true
+      },
+      "severity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "low",
+          "moderate",
+          "high",
+          "critical",
+          null
+        ]
+      }
+    },
+    "generation_rule": "TBD",
+    "note": "Not every criterion must produce a finding (Design Spec §10). The condition that triggers a finding, and which type it produces, is not defined in the source documents and is not invented here."
+  },
+  "rule_types": [
+    {
+      "type": "threshold",
+      "description": "Maps numeric values to bands.",
+      "v1_usage": "Primary rule type for V1 -- used by all 51 criteria via classification_model.bands."
+    },
+    {
+      "type": "match",
+      "description": "Maps categorical responses to defined outcomes.",
+      "v1_usage": "Supported by the schema; not used by any V1 criterion (all 51 are maturity_1_5)."
+    },
+    {
+      "type": "conditional",
+      "description": "Allows conditional evaluation and applicability logic.",
+      "v1_usage": "Supported by the schema; not used by any V1 criterion."
+    },
+    {
+      "type": "weighted_sum",
+      "description": "Aggregates multiple criteria into a category/dimension score via weights.",
+      "v1_usage": "Reserved for future composite rules; not used in V1. No V1 criterion carries a weight field."
+    },
+    {
+      "type": "cross_reference",
+      "description": "Compares results across categories.",
+      "v1_usage": "Deferred -- not implemented in V1 (Design Spec §8)."
+    }
+  ],
+  "aggregation": {
+    "dimension": {
+      "method": "TBD",
+      "preserves": [
+        "criterion_results",
+        "findings",
+        "classification_distribution",
+        "severity_distribution",
+        "concentration_pattern_information"
+      ],
+      "note": "Design Spec §13: dimension aggregation is 'not a simple average'; the exact aggregation classification logic is proprietary and undefined in the source documents."
+    },
+    "journey": {
+      "method": "TBD",
+      "preserves": [
+        "criterion_results",
+        "findings",
+        "classification_distribution",
+        "severity_distribution"
+      ],
+      "note": "Design Spec §14: journey aggregation preserves structure rather than reducing the stage to an average. The same criterion result contributes to both its journey result and its dimension result."
+    },
+    "overall_score": null,
+    "overall_score_note": "V1 deliberately does not reduce the entire business to a single number (Design Spec §20)."
+  },
+  "priority": {
+    "included_in_v1": true,
+    "signals": [
+      "severity",
+      "concentration",
+      "explicit_relationships",
+      "potential_impact"
+    ],
+    "precedence_order": [
+      "critical_severity",
+      "high_severity_with_broad_or_concentrated_impact",
+      "high_severity",
+      "moderate_severity_with_meaningful_concentration",
+      "moderate_severity",
+      "low_severity"
+    ],
+    "tie_breakers": [
+      "broader_explicit_relationship",
+      "greater_concentration",
+      "greater_journey_relevance"
+    ],
+    "scoring_formula": "TBD",
+    "root_cause_statuses": [
+      "none_identified",
+      "explicit_relationship",
+      "potential_relationship"
+    ],
+    "note": "Design Spec §16-§18: an ordered list of qualitative signals is defined, not a numeric scoring function or cutoffs. A priority is not simply the lowest score. Sophisticated root-cause inference is deferred beyond V1; V1 must not claim causal certainty from correlation alone."
+  },
+  "criteria": [
+    {
+      "id": "attract.marketing_strategy.audience",
+      "journey_stage": "attract",
+      "dimension": "marketing_strategy",
+      "question": "How clearly defined is the audience your business is trying to attract?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "audience"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.marketing_strategy.positioning",
+      "journey_stage": "attract",
+      "dimension": "marketing_strategy",
+      "question": "How clearly does the business communicate why a customer should choose it over alternatives?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "positioning"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.marketing_strategy.channels",
+      "journey_stage": "attract",
+      "dimension": "marketing_strategy",
+      "question": "How intentionally does the business select and use channels to reach its target audience?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "channels"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.marketing_strategy.acquisition",
+      "journey_stage": "attract",
+      "dimension": "marketing_strategy",
+      "question": "How clearly has the business defined how it will turn its target audience into potential customers?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "acquisition"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.ux_design.discovery_experience",
+      "journey_stage": "attract",
+      "dimension": "ux_design",
+      "question": "How effectively does the business's digital experience help a new visitor understand what the business offers and where to go next?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "discovery_experience"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.ux_design.landing_pages",
+      "journey_stage": "attract",
+      "dimension": "ux_design",
+      "question": "How effectively do the business's landing pages connect a visitor's initial interest to a clear and relevant next step?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "landing_pages"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.ux_design.entry_points",
+      "journey_stage": "attract",
+      "dimension": "ux_design",
+      "question": "How effectively are the business's entry points designed to move visitors from initial discovery into the customer journey?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "entry_points"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.brand_identity.awareness",
+      "journey_stage": "attract",
+      "dimension": "brand_identity",
+      "question": "How effectively does the business establish awareness of its brand among the audience it wants to reach?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "awareness"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.brand_identity.differentiation",
+      "journey_stage": "attract",
+      "dimension": "brand_identity",
+      "question": "How clearly does the business communicate what makes it meaningfully different from alternatives?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "differentiation"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.brand_identity.messaging",
+      "journey_stage": "attract",
+      "dimension": "brand_identity",
+      "question": "How clearly does the business communicate its value and relevance to the audience it wants to attract?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "messaging"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.systems_integration.tracking",
+      "journey_stage": "attract",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business capture the information needed to understand where its customer acquisition activity is coming from and how it is performing?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "tracking"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.systems_integration.attribution",
+      "journey_stage": "attract",
+      "dimension": "systems_integration",
+      "question": "How effectively can the business determine which acquisition sources and activities are contributing to customer opportunities?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "attribution"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "attract.systems_integration.acquisition_infrastructure",
+      "journey_stage": "attract",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business's underlying infrastructure support the acquisition of new customers and opportunities?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "acquisition_infrastructure"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.marketing_strategy.offer",
+      "journey_stage": "engage",
+      "dimension": "marketing_strategy",
+      "question": "How clearly does the business's offer address a meaningful need or opportunity for its intended audience?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "offer"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.marketing_strategy.value_proposition",
+      "journey_stage": "engage",
+      "dimension": "marketing_strategy",
+      "question": "How clearly does the business communicate the value a customer can expect from choosing its offer?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "value_proposition"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.marketing_strategy.content_strategy",
+      "journey_stage": "engage",
+      "dimension": "marketing_strategy",
+      "question": "How intentionally does the business use content to help its audience evaluate the business, its offer, and its value?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "content_strategy"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.ux_design.website_experience",
+      "journey_stage": "engage",
+      "dimension": "ux_design",
+      "question": "How effectively does the business's website experience help visitors evaluate the business and move toward the next appropriate step?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "website_experience"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.ux_design.navigation",
+      "journey_stage": "engage",
+      "dimension": "ux_design",
+      "question": "How effectively does the business's navigation help visitors find the information they need to evaluate the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "navigation"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.ux_design.information",
+      "journey_stage": "engage",
+      "dimension": "ux_design",
+      "question": "How effectively does the business provide the information customers need to evaluate its offering and make an informed decision?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "information"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.brand_identity.trust",
+      "journey_stage": "engage",
+      "dimension": "brand_identity",
+      "question": "How effectively does the business's brand experience establish trust as customers evaluate the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "trust"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.brand_identity.clarity",
+      "journey_stage": "engage",
+      "dimension": "brand_identity",
+      "question": "How clearly does the brand communicate what the business offers and what customers can expect?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "clarity"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.brand_identity.relevance",
+      "journey_stage": "engage",
+      "dimension": "brand_identity",
+      "question": "How effectively does the brand communicate in a way that feels relevant to the audience's needs, priorities, and situation?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "relevance"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.brand_identity.brand_experience",
+      "journey_stage": "engage",
+      "dimension": "brand_identity",
+      "question": "How consistently does the customer's experience reflect the brand's intended identity, value, and expectations?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "brand_experience"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.systems_integration.analytics",
+      "journey_stage": "engage",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business use analytics to understand what happens as potential customers evaluate the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "analytics"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.systems_integration.data_capture",
+      "journey_stage": "engage",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business capture the information needed to understand and manage customers as they evaluate the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "data_capture"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "engage.systems_integration.crm_connection",
+      "journey_stage": "engage",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business connect customer and prospect information to the systems used to manage relationships and opportunities?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "crm_connection"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.marketing_strategy.conversion_strategy",
+      "journey_stage": "convert",
+      "dimension": "marketing_strategy",
+      "question": "How intentionally has the business designed the process for turning engaged prospects into customers or meaningful opportunities?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "conversion_strategy"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.marketing_strategy.offer",
+      "journey_stage": "convert",
+      "dimension": "marketing_strategy",
+      "question": "How effectively does the offer give an engaged prospect a clear and compelling reason to take the next meaningful action?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "offer"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.marketing_strategy.sales_alignment",
+      "journey_stage": "convert",
+      "dimension": "marketing_strategy",
+      "question": "How effectively are marketing and sales aligned around converting qualified prospects into customers or opportunities?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "sales_alignment"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.ux_design.conversion_paths",
+      "journey_stage": "convert",
+      "dimension": "ux_design",
+      "question": "How effectively does the user experience guide an engaged prospect toward completing the intended conversion action?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "conversion_paths"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.ux_design.forms",
+      "journey_stage": "convert",
+      "dimension": "ux_design",
+      "question": "How effectively do the business's forms support prospects in completing the intended conversion action?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "forms"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.ux_design.booking",
+      "journey_stage": "convert",
+      "dimension": "ux_design",
+      "question": "How effectively does the booking experience help a prospect complete the intended conversion with minimal friction?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "booking"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.ux_design.checkout",
+      "journey_stage": "convert",
+      "dimension": "ux_design",
+      "question": "How effectively does the checkout experience help a prospect complete a purchase with clarity and minimal friction?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "checkout"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.brand_identity.value_communication",
+      "journey_stage": "convert",
+      "dimension": "brand_identity",
+      "question": "How effectively does the brand communicate the value of the offer at the point where a prospect is deciding whether to take action?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "value_communication"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.brand_identity.credibility",
+      "journey_stage": "convert",
+      "dimension": "brand_identity",
+      "question": "How effectively does the brand provide credible signals that support a prospect's decision to take action?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "credibility"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.brand_identity.decision_confidence",
+      "journey_stage": "convert",
+      "dimension": "brand_identity",
+      "question": "How effectively does the brand experience give prospects the confidence they need to take the intended action?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "decision_confidence"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.systems_integration.lead_routing",
+      "journey_stage": "convert",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business move new leads or opportunities to the appropriate person, process, or next step?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "lead_routing"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.systems_integration.follow_up",
+      "journey_stage": "convert",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business follow up with prospects after they take a conversion-related action?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "follow_up"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "convert.systems_integration.conversion_tracking",
+      "journey_stage": "convert",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business measure whether conversion activities are producing the intended customer or business outcomes?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "conversion_tracking"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.marketing_strategy.customer_value",
+      "journey_stage": "retain",
+      "dimension": "marketing_strategy",
+      "question": "How intentionally does the business continue to create meaningful value for existing customers?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "customer_value"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.marketing_strategy.retention",
+      "journey_stage": "retain",
+      "dimension": "marketing_strategy",
+      "question": "How intentionally does the business encourage existing customers to continue their relationship with the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "retention"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.marketing_strategy.lifecycle_strategy",
+      "journey_stage": "retain",
+      "dimension": "marketing_strategy",
+      "question": "How intentionally does the business manage ongoing customer relationships across the customer lifecycle?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "lifecycle_strategy"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.ux_design.customer_experience",
+      "journey_stage": "retain",
+      "dimension": "ux_design",
+      "question": "How effectively does the ongoing customer experience support satisfaction, continued value, and the relationship with the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "customer_experience"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.ux_design.account_service_interactions",
+      "journey_stage": "retain",
+      "dimension": "ux_design",
+      "question": "How effectively are ongoing account or service interactions designed to make it easy for customers to manage their relationship with the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "account_service_interactions"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.brand_identity.relationship",
+      "journey_stage": "retain",
+      "dimension": "brand_identity",
+      "question": "How intentionally does the brand support and strengthen its ongoing relationship with existing customers?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "relationship"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.brand_identity.loyalty",
+      "journey_stage": "retain",
+      "dimension": "brand_identity",
+      "question": "How intentionally does the brand encourage customers to maintain an ongoing preference and relationship with the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "loyalty"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.brand_identity.continued_brand_relevance",
+      "journey_stage": "retain",
+      "dimension": "brand_identity",
+      "question": "How effectively does the brand remain relevant to existing customers as their needs, expectations, and relationship with the business evolve?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "continued_brand_relevance"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.systems_integration.crm",
+      "journey_stage": "retain",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business use its CRM or relationship-management system to support ongoing customer relationships?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "crm"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.systems_integration.automation",
+      "journey_stage": "retain",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business use automation to support ongoing customer relationships and lifecycle activities?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "automation"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.systems_integration.lifecycle_communication",
+      "journey_stage": "retain",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business communicate with customers according to their stage, needs, and relationship with the business?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "lifecycle_communication"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    },
+    {
+      "id": "retain.systems_integration.customer_data",
+      "journey_stage": "retain",
+      "dimension": "systems_integration",
+      "question": "How effectively does the business maintain and use customer data to understand and support ongoing customer relationships?",
+      "response": {
+        "type": "maturity_1_5",
+        "evidence": true,
+        "applicability": true
+      },
+      "evaluation": {
+        "rule": {
+          "type": "threshold",
+          "bands_ref": "classification_model"
+        }
+      },
+      "finding": {
+        "finding_ref": "customer_data"
+      },
+      "severity": {
+        "rule": "TBD"
+      }
+    }
+  ]
+}
