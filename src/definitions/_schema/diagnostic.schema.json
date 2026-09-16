@@ -467,7 +467,8 @@
         "max_theoretical_score": { "type": "integer", "const": 320 },
         "usage": { "type": "string" },
         "depends_on": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "relationship_to_precedence_order": { "type": "string" }
+        "relationship_to_precedence_order": { "type": "string" },
+        "v1_note": { "type": "string" }
       }
     },
 

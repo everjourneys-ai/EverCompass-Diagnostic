@@ -633,7 +633,8 @@
           }
         },
         "depends_on": "What makes a set of findings 'related' in the first place (Design Spec section 15, Pattern) is not defined by this instruction and remains a separate, unresolved dependency -- these thresholds operate on a related-findings set once one exists."
-      }
+      },
+      "v1_note": "journey_relevance is uniformly \"high\" (weight 3) for all v1 criteria -- see journey_relevance_model.note. Effective v1 priority differentiation therefore comes primarily from severity, impact, and concentration, not journey_relevance. journey_relevance is kept in the formula and schema (not removed) for later diagnostic versions."
     },
     "root_cause_statuses": [
       "none_identified",
@@ -668,7 +669,7 @@
         }
       },
       "impact": "system",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.marketing_strategy.positioning",
@@ -694,8 +695,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD",
-      "journey_relevance": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "high"
     },
     {
       "id": "attract.marketing_strategy.channels",
@@ -722,7 +723,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.marketing_strategy.acquisition",
@@ -749,7 +750,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.ux_design.discovery_experience",
@@ -776,7 +777,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.ux_design.landing_pages",
@@ -803,7 +804,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.ux_design.entry_points",
@@ -830,7 +831,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.brand_identity.awareness",
@@ -857,7 +858,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.brand_identity.differentiation",
@@ -884,7 +885,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.brand_identity.messaging",
@@ -911,7 +912,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.systems_integration.tracking",
@@ -938,7 +939,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.systems_integration.attribution",
@@ -965,7 +966,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "attract.systems_integration.acquisition_infrastructure",
@@ -992,7 +993,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.marketing_strategy.offer",
@@ -1019,7 +1020,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.marketing_strategy.value_proposition",
@@ -1046,7 +1047,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.marketing_strategy.content_strategy",
@@ -1073,7 +1074,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.ux_design.website_experience",
@@ -1100,7 +1101,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.ux_design.navigation",
@@ -1127,7 +1128,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.ux_design.information",
@@ -1154,7 +1155,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.brand_identity.trust",
@@ -1180,8 +1181,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD",
-      "journey_relevance": "TBD"
+      "impact": "journey",
+      "journey_relevance": "high"
     },
     {
       "id": "engage.brand_identity.clarity",
@@ -1208,7 +1209,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.brand_identity.relevance",
@@ -1235,7 +1236,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.brand_identity.brand_experience",
@@ -1261,8 +1262,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD",
-      "journey_relevance": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "high"
     },
     {
       "id": "engage.systems_integration.analytics",
@@ -1289,7 +1290,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.systems_integration.data_capture",
@@ -1316,7 +1317,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "engage.systems_integration.crm_connection",
@@ -1343,7 +1344,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.marketing_strategy.conversion_strategy",
@@ -1370,7 +1371,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.marketing_strategy.offer",
@@ -1397,7 +1398,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.marketing_strategy.sales_alignment",
@@ -1423,8 +1424,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD",
-      "journey_relevance": "TBD"
+      "impact": "dimension",
+      "journey_relevance": "high"
     },
     {
       "id": "convert.ux_design.conversion_paths",
@@ -1451,7 +1452,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.ux_design.forms",
@@ -1478,7 +1479,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.ux_design.booking",
@@ -1505,7 +1506,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.ux_design.checkout",
@@ -1532,7 +1533,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.brand_identity.value_communication",
@@ -1559,7 +1560,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.brand_identity.credibility",
@@ -1586,7 +1587,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.brand_identity.decision_confidence",
@@ -1612,8 +1613,8 @@
           "ref": "severity_model.derivation_rule"
         }
       },
-      "impact": "TBD",
-      "journey_relevance": "TBD"
+      "impact": "journey",
+      "journey_relevance": "high"
     },
     {
       "id": "convert.systems_integration.lead_routing",
@@ -1640,7 +1641,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.systems_integration.follow_up",
@@ -1667,7 +1668,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "convert.systems_integration.conversion_tracking",
@@ -1694,7 +1695,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.marketing_strategy.customer_value",
@@ -1721,7 +1722,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.marketing_strategy.retention",
@@ -1748,7 +1749,7 @@
         }
       },
       "impact": "journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.marketing_strategy.lifecycle_strategy",
@@ -1775,7 +1776,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.ux_design.customer_experience",
@@ -1802,7 +1803,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.ux_design.account_service_interactions",
@@ -1829,7 +1830,7 @@
         }
       },
       "impact": "criterion",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.brand_identity.relationship",
@@ -1856,7 +1857,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.brand_identity.loyalty",
@@ -1883,7 +1884,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.brand_identity.continued_brand_relevance",
@@ -1910,7 +1911,7 @@
         }
       },
       "impact": "dimension",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.systems_integration.crm",
@@ -1937,7 +1938,7 @@
         }
       },
       "impact": "system",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.systems_integration.automation",
@@ -1964,7 +1965,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.systems_integration.lifecycle_communication",
@@ -1991,7 +1992,7 @@
         }
       },
       "impact": "cross_journey",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     },
     {
       "id": "retain.systems_integration.customer_data",
@@ -2018,7 +2019,7 @@
         }
       },
       "impact": "system",
-      "journey_relevance": "TBD"
+      "journey_relevance": "high"
     }
   ],
   "impact_model": {
@@ -2065,6 +2066,6 @@
         "meaning": "Foundational condition that substantially prevents the journey stage from functioning."
       }
     ],
-    "note": "Design Spec priority signals + this session's decision. Must be explicitly defined on the diagnostic criteria/configuration where required -- never inferred by the engine from question wording. Per-criterion values are not assigned in this round; see criteria[*].journey_relevance (TBD for all 51)."
+    "note": "Design Spec priority signals + this session's decision. Must be explicitly defined on the diagnostic criteria/configuration where required -- never inferred by the engine from question wording. v1.0: uniformly \"high\" for all 51 criteria -- every criterion is intentionally assigned to one specific journey stage and evaluates a condition directly relevant to it. Not varied merely to create scoring differentiation; \"critical\" is deliberately not used at the criterion-definition level in v1.0 -- criticality should arise from evaluated diagnostic conditions, not from assuming a criterion is always foundational. journey_relevance_weight is therefore 3 for every v1 criterion. The field and weight model are retained for later diagnostic versions that may introduce differentiated cross-journey/root-cause relevance."
   }
 }
