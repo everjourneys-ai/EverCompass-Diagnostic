@@ -35,44 +35,52 @@
     "marketing_strategy": {
       "criteria": ["attract.marketing_strategy.audience"],
       "findings": ["F-001"],
-      "summary": { "classification_distribution": { "needs_attention": 1 } }
+      "summary": { "classification_distribution": { "needs_attention": 1 } },
+      "dominant_condition": "high"
     },
     "ux_design": {
       "criteria": ["attract.ux_design.landing_pages"],
       "findings": [],
-      "summary": { "classification_distribution": { "strong": 1 } }
+      "summary": { "classification_distribution": { "strong": 1 } },
+      "dominant_condition": "strong"
     },
     "brand_identity": {
       "criteria": [],
       "findings": [],
-      "summary": { "classification_distribution": {} }
+      "summary": { "classification_distribution": {} },
+      "dominant_condition": "no_data"
     },
     "systems_integration": {
       "criteria": [],
       "findings": [],
-      "summary": { "classification_distribution": {} }
+      "summary": { "classification_distribution": {} },
+      "dominant_condition": "no_data"
     }
   },
   "journey_stages": {
     "attract": {
       "criteria": ["attract.marketing_strategy.audience", "attract.ux_design.landing_pages"],
       "findings": ["F-001"],
-      "summary": { "classification_distribution": { "needs_attention": 1, "strong": 1 } }
+      "summary": { "classification_distribution": { "needs_attention": 1, "strong": 1 } },
+      "dominant_condition": "high"
     },
     "engage": {
       "criteria": [],
       "findings": [],
-      "summary": { "classification_distribution": {} }
+      "summary": { "classification_distribution": {} },
+      "dominant_condition": "no_data"
     },
     "convert": {
       "criteria": [],
       "findings": [],
-      "summary": { "classification_distribution": {} }
+      "summary": { "classification_distribution": {} },
+      "dominant_condition": "no_data"
     },
     "retain": {
       "criteria": [],
       "findings": [],
-      "summary": { "classification_distribution": {} }
+      "summary": { "classification_distribution": {} },
+      "dominant_condition": "no_data"
     }
   },
   "priorities": [
@@ -81,7 +89,8 @@
       "title": "Illustrative fixture priority -- not real business logic",
       "supporting_findings": ["F-001"],
       "journey_stages": ["attract"],
-      "dimensions": ["marketing_strategy"]
+      "dimensions": ["marketing_strategy"],
+      "priority_score": 45
     }
   ],
   "system_summary": {

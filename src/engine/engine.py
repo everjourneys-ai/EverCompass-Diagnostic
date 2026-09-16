@@ -19,8 +19,15 @@ from .types import AssessmentResult, Response
 from .validate import validate_responses
 
 #: This build's engine version (Architecture v1.2 ADR-006: tracked
-#: independently of diagnostic_version). First draft.
-ENGINE_VERSION = "0.1.0"
+#: independently of diagnostic_version -- bumping this never implies a
+#: methodology change, and vice versa; only src/definitions/diagnostic.json's
+#: own "version" field does that). Response validation, per-criterion
+#: evaluation, finding generation, severity derivation, dimension/journey
+#: aggregation, concentration, and priority scoring/ordering are all fully
+#: implemented against Diagnostic Definition v1.0.0 (69/69 tests passing).
+#: Still ahead of this engine, not part of its version: a FastAPI layer,
+#: an application layer between FastAPI and this engine, and persistence.
+ENGINE_VERSION = "0.2.0"
 
 
 def evaluate(

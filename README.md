@@ -1,57 +1,63 @@
-# EverCompass Diagnostic — Definition & Schema
+# EverCompass Diagnostic — Definition, Schema & Engine
 
-Structured diagnostic content for the EverCompass Diagnostic Engine, built from:
+A deterministic, versioned business-diagnostic assessment system, built from:
 
 - `Evercompass-diagnostic-engine-architecture-v1_2` (Notion)
 - `EverCompass Diagnostic Engine Design Specification v1.0` (Notion)
 
-See **`DECISIONS.md`** first — the two source documents disagree on several points (whether there's an overall score, pass/fail vs. graded scoring, per-criterion weights, where Priority generation lives, and two naming inconsistencies). `DECISIONS.md` resolves each one with a citable reason, in the same ADR style as the Architecture document, and lists what's still genuinely undefined and was deliberately left that way rather than invented.
+See **`DECISIONS.md`** first — it resolves every point where the two source documents disagreed (whether there's an overall score, pass/fail vs. graded scoring, per-criterion weights, where Priority generation lives, and two naming inconsistencies), in the same ADR style as the Architecture document. Every methodology decision needed to make the definition and engine fully computable end-to-end (finding generation, severity derivation, dimension/journey aggregation, priority scoring, criterion impact assignment) has since been resolved and is recorded in the definition's own `*_model`/`aggregation`/`priority` sections, plus the session history behind this repo's commits. Concentration/pattern grouping (Design Spec §15) remains deliberately deferred, not invented — see `src/engine/concentration.py`.
 
 ## What's here
 
 ```
 evercompass-diagnostic/
-├── DECISIONS.md                              # ADR-009–015, resolving the two docs' contradictions
+├── DECISIONS.md                    # ADR-009-015: how the two source documents' contradictions were resolved
+├── ENGINE_STATUS.md                # current status of src/engine/
 ├── schema/
-│   ├── diagnostic.schema.json                # validates a diagnostic definition
-│   ├── response.schema.json                  # validates one respondent answer
-│   ├── result.schema.json                    # validates a computed Assessment Result
-│   └── examples/                             # fixtures, validated against the schemas above
-└── definitions/evercompass/v1/
-    └── diagnostic.json                       # the 51 real criteria, transcribed from the Spec
+│   ├── diagnostic.schema.json      # validates src/definitions/diagnostic.json
+│   ├── response.schema.json        # validates one respondent answer
+│   ├── result.schema.json          # validates a computed Assessment Result
+│   └── examples/                   # fixtures, validated against the schemas above
+├── src/
+│   ├── definitions/
+│   │   └── diagnostic.json         # the frozen EverCompass Diagnostic Definition v1.0 (51 criteria)
+│   └── engine/                     # the pure, deterministic Assessment Engine (stdlib-only Python)
+└── tests/
+    ├── golden/                     # Architecture §29 golden-test fixtures + spec
+    └── test_*.py                   # unit tests
 ```
 
 ## Status
 
-`diagnostic.json`'s `status` is `"draft"`. It contains the **real** 51 criteria (id, journey stage, dimension, question text) transcribed verbatim from the Design Specification — this is not placeholder/test-fixture content. What it does **not** contain, because neither source document defines it and it was not invented here:
+`src/definitions/diagnostic.json`'s `status` is `"published"` (v1.0.0) — per Design Spec §24, a published diagnostic definition is immutable; any further methodology change requires a new version. It contains the real 51 criteria plus every resolved methodology rule: `finding_model.generation_rule`, `severity_model.derivation_rule`, `aggregation.dimension.method` / `aggregation.journey.method` (six-tier condition_rules: critical, high, moderate, developing, operationalized, strong), and `priority.scoring_formula`. `criteria[*].impact` and `criteria[*].journey_relevance` are assigned for all 51 criteria.
 
-- Per-criterion `severity.rule` (every criterion has it set to `null`)
-- Dimension/journey/priority `aggregation` logic (all `null`)
-- Finding-generation trigger logic (what makes a finding, and of which type)
-- The priority-ordering formula (only qualitative signal ordering exists — Spec §17)
-- The criterion relationship/pattern map (only two illustrative examples exist — Spec §15)
-- `recommendations.json` (doesn't exist in either source document)
+`src/engine/` is fully implemented against v1.0: response validation, per-criterion scoring/classification, finding generation, severity derivation, dimension/journey aggregation (including dominant-condition classification), concentration (fixed at `"isolated"` for v1.0, per the decision above), and priority scoring/ordering. See `ENGINE_STATUS.md` for the module-by-module breakdown.
 
-Per Architecture v1.2 §21, this is expected at this stage: schema-shaped, real-criteria content that proves the model, not yet enough to compute a defensible score. Golden tests and the `finding`/`severity`/`aggregation`/priority rules should be authored as a follow-up with Ivan, not guessed at.
+What's still deliberately not built, because no source document defines it and it was not invented here:
+- Semantic related-finding grouping / pattern detection (Design Spec §15) — concentration is `"isolated"` for every finding in v1.0.
+- `recommendations.json` — does not exist in either source document.
+- The FastAPI layer, Supabase persistence, and AI interpretation layer (Architecture v1.2 Phases 2-3) — this repo is the deterministic engine only.
+
+## Running the tests
+
+Stdlib `unittest` only, no test dependency required:
+
+```bash
+PYTHONPATH=src:tests python3 -m unittest discover -s tests -v
+```
 
 ## Validating
 
-Requires Node (already a project dependency for the Astro site). No new dependency was added to `package.json` — validation was run ad hoc via `npx`:
+Requires Node. No `package.json` dependency was added — validation is run ad hoc via `npx`:
 
 ```bash
-npx ajv-cli@5 validate --spec=draft2020 -s schema/diagnostic.schema.json -d definitions/evercompass/v1/diagnostic.json
+npx ajv-cli@5 validate --spec=draft2020 -s schema/diagnostic.schema.json -d src/definitions/diagnostic.json
 npx ajv-cli@5 validate --spec=draft2020 -s schema/response.schema.json -d schema/examples/response-applicable.json
 npx ajv-cli@5 validate --spec=draft2020 -s schema/result.schema.json -d schema/examples/result-example.json
 ```
 
-All three currently pass. Two negative cases were also spot-checked (an out-of-range `not_applicable` value, and an invalid `dimension` enum value) to confirm the schemas actually reject bad data rather than accepting anything.
+All three currently pass.
 
-## Not done here
+## Architectural boundary
 
-Per `DECISIONS.md` ADR-015, this pass produced data only (schema + definition), not code. Still outstanding, per Architecture v1.2's Implementation Gate (§25) and phased plan (§24):
-
-- Where this content and the eventual engine/API actually live (this repo is Astro/TypeScript with no Python service; both source documents assume a separate FastAPI service and a Framer frontend)
-- The Assessment Engine itself (`evaluate` / `score` / `classify` / `priority`)
-- Golden tests
-- `recommendations.json`
-- The FastAPI layer, Supabase persistence, and AI interpretation layer (Phases 2–3, unchanged scope from both source documents)
+The engine (`src/engine/`) has no HTTP, database, AI, or frontend dependency (Architecture v1.2 §3) — it is a pure function of `(diagnostic definition, responses) -> AssessmentResult`. It is intended to be wrapped by a FastAPI service and an application layer, neither of which exists in this repo yet.

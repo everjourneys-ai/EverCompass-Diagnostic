@@ -2,130 +2,486 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://everjourneys.ai/schemas/evercompass/diagnostic.schema.json",
   "title": "EverCompass Diagnostic Definition",
-  "description": "Structural schema for a versioned EverCompass diagnostic definition. Per DECISIONS.md ADR-009/010/011, there is no per-criterion weight and no overall-score field anywhere in this schema. Fields called out in DECISIONS.md as 'still undefined' (severity.rule, aggregation.*) are typed to allow null rather than given invented content.",
+  "description": "Validates src/definitions/diagnostic.json, the canonical EverCompass Diagnostic Definition. finding_model.generation_rule, severity_model.derivation_rule, aggregation.dimension.method, aggregation.journey.method, and priority.scoring_formula are fully resolved, including their interpretive sub-terms (high-impact criterion, meaningful weakness/issue, multiple/most/all, concentration thresholds). criteria[*].impact and criteria[*].journey_relevance are assigned for all 51 criteria. Per DECISIONS.md ADR-009/010/011, there is no per-criterion weight and no overall-score field anywhere in this schema. This file superseded an earlier, structurally different draft schema (pre-methodology-resolution, Architecture-doc pass/fail shape) that lived at this same path; that draft and its matching draft diagnostic.json under definitions/evercompass/v1/ have been removed as stale duplicates -- src/definitions/diagnostic.json and this schema are now the single source of truth.",
   "type": "object",
   "required": [
-    "diagnostic_id",
-    "name",
-    "version",
-    "status",
-    "journey_stages",
-    "dimensions",
-    "maturity_scale",
-    "severity_levels",
-    "criteria",
-    "aggregation"
+    "diagnostic_id", "name", "version", "status",
+    "journey_stages", "dimensions",
+    "response_model", "applicability_model", "classification_model",
+    "severity_model", "finding_model", "impact_model", "journey_relevance_model", "rule_types",
+    "aggregation", "priority", "criteria"
   ],
   "additionalProperties": false,
   "properties": {
-    "diagnostic_id": {
-      "type": "string",
-      "const": "evercompass"
-    },
-    "name": {
-      "type": "string",
-      "minLength": 1
-    },
-    "version": {
-      "type": "string",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semver-ish diagnostic content version (Architecture v1.2 ADR-006). Immutable once status is 'published'."
-    },
-    "status": {
-      "type": "string",
-      "enum": ["draft", "published", "deprecated"]
-    },
+    "diagnostic_id": { "type": "string", "const": "evercompass" },
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "status": { "type": "string", "enum": ["draft", "published", "deprecated"] },
+
     "journey_stages": {
       "type": "array",
-      "description": "The four Customer Journey stages, in order (Design Spec §2.1).",
-      "items": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] },
+      "items": { "$ref": "#/$defs/labeledEnumEntry" },
       "minItems": 4,
-      "maxItems": 4,
-      "uniqueItems": true
+      "maxItems": 4
     },
     "dimensions": {
       "type": "array",
-      "description": "The four Lenses/pillars (Design Spec §2.2). 'brand_identity' per DECISIONS.md ADR-013.",
-      "items": {
-        "type": "string",
-        "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"]
-      },
+      "items": { "$ref": "#/$defs/labeledEnumEntry" },
       "minItems": 4,
-      "maxItems": 4,
-      "uniqueItems": true
+      "maxItems": 4
     },
-    "maturity_scale": {
+
+    "response_model": {
+      "type": "object",
+      "required": ["type", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "const": "maturity_1_5" },
+        "fields": {
+          "type": "object",
+          "required": ["criterion_id", "value", "evidence", "applicability"],
+          "additionalProperties": false,
+          "properties": {
+            "criterion_id": { "$ref": "#/$defs/fieldSpec" },
+            "value": { "$ref": "#/$defs/fieldSpec" },
+            "evidence": { "$ref": "#/$defs/fieldSpec" },
+            "applicability": { "$ref": "#/$defs/fieldSpec" }
+          }
+        }
+      }
+    },
+
+    "applicability_model": {
+      "type": "object",
+      "required": ["values", "effect_of_not_applicable"],
+      "additionalProperties": false,
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["applicable", "not_applicable"] },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "effect_of_not_applicable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "score": { "const": null },
+            "classification": { "const": null },
+            "finding": { "const": null },
+            "severity": { "const": null }
+          }
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "classification_model": {
+      "type": "object",
+      "required": ["scale", "bands"],
+      "additionalProperties": false,
+      "properties": {
+        "scale": { "type": "string", "const": "maturity_1_5" },
+        "bands": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/maturityBand" },
+          "minItems": 5,
+          "maxItems": 5
+        }
+      }
+    },
+
+    "impact_model": {
+      "type": "object",
+      "required": ["levels"],
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/idMeaningEntry" },
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "journey_relevance_model": {
+      "type": "object",
+      "required": ["levels"],
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/idMeaningEntry" },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "severity_model": {
+      "type": "object",
+      "required": ["levels", "derivation_rule"],
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/idMeaningEntry" },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "derivation_rule": { "$ref": "#/$defs/classificationImpactMatrixRule" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "finding_model": {
+      "type": "object",
+      "required": ["types", "fields", "generation_rule"],
+      "additionalProperties": false,
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "fields": {
+          "type": "object",
+          "required": ["finding_id", "criterion_id", "journey_stage", "dimension", "type", "severity"],
+          "additionalProperties": false,
+          "properties": {
+            "finding_id": { "$ref": "#/$defs/fieldSpec" },
+            "criterion_id": { "$ref": "#/$defs/fieldSpec" },
+            "journey_stage": { "$ref": "#/$defs/fieldSpec" },
+            "dimension": { "$ref": "#/$defs/fieldSpec" },
+            "type": { "$ref": "#/$defs/fieldSpec" },
+            "severity": { "$ref": "#/$defs/fieldSpec" }
+          }
+        },
+        "generation_rule": { "$ref": "#/$defs/classificationMappingRule" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "rule_types": {
       "type": "array",
-      "description": "The Maturity Model (Design Spec §6), transcribed verbatim. Uniform across all criteria using response.type == maturity_1_5 -- referenced by each criterion's evaluation.rule.bands_ref rather than repeated 51 times.",
-      "items": { "$ref": "#/$defs/maturityBand" },
+      "items": {
+        "type": "object",
+        "required": ["type", "description", "v1_usage"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["threshold", "match", "conditional", "weighted_sum", "cross_reference"]
+          },
+          "description": { "type": "string", "minLength": 1 },
+          "v1_usage": { "type": "string", "minLength": 1 }
+        }
+      },
       "minItems": 5,
       "maxItems": 5
     },
-    "severity_levels": {
+
+    "aggregation": {
       "type": "object",
-      "description": "Severity level definitions (Design Spec §11), transcribed verbatim. This defines what each level MEANS -- it does not say which criterion/condition maps to which level; that mapping is undefined (see DECISIONS.md).",
-      "required": ["low", "moderate", "high", "critical"],
+      "required": ["dimension", "journey", "overall_score", "overall_score_note"],
       "additionalProperties": false,
       "properties": {
-        "low": { "$ref": "#/$defs/severityLevel" },
-        "moderate": { "$ref": "#/$defs/severityLevel" },
-        "high": { "$ref": "#/$defs/severityLevel" },
-        "critical": { "$ref": "#/$defs/severityLevel" }
+        "dimension": { "$ref": "#/$defs/aggregationSection" },
+        "journey": { "$ref": "#/$defs/aggregationSection" },
+        "overall_score": {
+          "const": null,
+          "description": "Settled, not TBD: ADR-009 -- V1 has no overall score, ever."
+        },
+        "overall_score_note": { "type": "string" }
       }
     },
+
+    "priority": {
+      "type": "object",
+      "required": [
+        "included_in_v1", "signals", "precedence_order", "tie_breakers",
+        "scoring_formula", "root_cause_statuses"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "included_in_v1": { "type": "boolean" },
+        "signals": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "precedence_order": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "tie_breakers": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "scoring_formula": { "$ref": "#/$defs/weightedProductRule" },
+        "root_cause_statuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["none_identified", "explicit_relationship", "potential_relationship"]
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "note": { "type": "string" }
+      }
+    },
+
     "criteria": {
       "type": "array",
-      "description": "The 51 diagnostic criteria (Design Spec §4).",
       "items": { "$ref": "#/$defs/criterion" },
       "minItems": 1
-    },
-    "aggregation": {
-      "description": "Dimension/journey/priority aggregation logic. Deliberately null in V1 -- Design Spec §13 calls this 'proprietary diagnostic logic' and does not define it; not invented here (see DECISIONS.md, ADR-011, 'Still undefined').",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "dimension": { "type": ["object", "null"] },
-        "journey": { "type": ["object", "null"] },
-        "priority": { "type": ["object", "null"] }
-      }
     }
   },
+
   "$defs": {
+    "labeledEnumEntry": {
+      "type": "object",
+      "required": ["id", "label", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "idMeaningEntry": {
+      "type": "object",
+      "required": ["id", "meaning"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "meaning": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "fieldSpec": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {},
+        "required": { "type": "boolean" },
+        "range": { "type": "array" },
+        "description": { "type": "string" },
+        "enum": { "type": "array" }
+      }
+    },
+
     "maturityBand": {
       "type": "object",
       "required": ["score", "classification", "meaning"],
       "additionalProperties": false,
       "properties": {
         "score": { "type": "integer", "minimum": 1, "maximum": 5 },
-        "classification": {
-          "type": "string",
-          "enum": ["needs_attention", "developing", "strong", "operationalized"]
-        },
+        "classification": { "$ref": "#/$defs/classification" },
         "meaning": { "type": "string", "minLength": 1 }
       }
     },
-    "severityLevel": {
+
+    "classification": {
+      "type": "string",
+      "enum": ["needs_attention", "developing", "strong", "operationalized"]
+    },
+
+    "dominantCondition": {
+      "description": "The six-level dominant-condition scale a Dimension/Journey Result is assigned (decisions 3-4) -- distinct from the four-level per-criterion classification scale.",
+      "type": "string",
+      "enum": ["critical", "high", "moderate", "developing", "strong", "operationalized"]
+    },
+
+    "severityLevel": { "type": "string", "enum": ["low", "moderate", "high", "critical"] },
+
+    "impactLevel": { "type": "string", "enum": ["criterion", "dimension", "journey", "cross_journey", "system"] },
+
+    "pendingOrValue": {
+      "description": "Either still-undefined (the literal string \"TBD\") or a resolved value of any shape -- deliberately unconstrained on the resolved side so filling this in later never requires a schema change.",
+      "not": { "type": "null" }
+    },
+
+    "classificationMappingRule": {
       "type": "object",
-      "required": ["meaning"],
+      "required": ["type", "mapping", "not_applicable_result"],
       "additionalProperties": false,
       "properties": {
-        "meaning": { "type": "string", "minLength": 1 }
+        "type": { "const": "classification_mapping" },
+        "mapping": {
+          "type": "object",
+          "required": ["needs_attention", "developing", "strong", "operationalized"],
+          "additionalProperties": false,
+          "properties": {
+            "needs_attention": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+            "developing": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+            "strong": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+            "operationalized": { "type": "string", "enum": ["issue", "opportunity", "strength"] }
+          }
+        },
+        "not_applicable_result": { "const": null },
+        "opportunity_note": { "type": "string" }
       }
     },
+
+    "classificationImpactMatrixRule": {
+      "type": "object",
+      "required": ["type", "matrix", "none_meaning", "depends_on"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "classification_impact_matrix" },
+        "matrix": {
+          "type": "object",
+          "required": ["needs_attention", "developing", "strong", "operationalized"],
+          "additionalProperties": false,
+          "properties": {
+            "needs_attention": { "$ref": "#/$defs/impactSeverityRow" },
+            "developing": { "$ref": "#/$defs/impactSeverityRow" },
+            "strong": { "$ref": "#/$defs/impactSeverityRow" },
+            "operationalized": { "$ref": "#/$defs/impactSeverityRow" }
+          }
+        },
+        "none_meaning": { "type": "string" },
+        "depends_on": { "type": "string" }
+      }
+    },
+
+    "impactSeverityRow": {
+      "type": "object",
+      "required": ["criterion", "dimension", "journey", "cross_journey", "system"],
+      "additionalProperties": false,
+      "properties": {
+        "criterion": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "dimension": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "journey": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "cross_journey": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] },
+        "system": { "oneOf": [{ "$ref": "#/$defs/severityLevel" }, { "const": null }] }
+      }
+    },
+
+    "conditionPredicate": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "conditionRuleEntry": {
+      "type": "object",
+      "required": ["condition", "match", "conditions"],
+      "additionalProperties": false,
+      "properties": {
+        "condition": { "$ref": "#/$defs/dominantCondition" },
+        "match": { "type": "string", "enum": ["any", "all"] },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/conditionPredicate" },
+          "minItems": 1
+        }
+      }
+    },
+
+    "aggregationSection": {
+      "type": "object",
+      "required": ["method", "preserves", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "method": { "$ref": "#/$defs/conditionRulesRule" },
+        "preserves": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "note": { "type": "string" }
+      }
+    },
+
+    "conditionRulesRule": {
+      "type": "object",
+      "required": ["type", "condition_rules"],
+      "properties": {
+        "type": { "const": "condition_rules" },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "condition_rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/conditionRuleEntry" },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "evaluation_order_note": { "type": "string" },
+        "excludes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "weightedProductRule": {
+      "type": "object",
+      "required": [
+        "type", "formula", "severity_weights", "impact_weights",
+        "concentration_weights", "concentration_determination_rule",
+        "journey_relevance_weights",
+        "max_theoretical_score", "usage", "depends_on"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "weighted_product" },
+        "formula": { "type": "string", "minLength": 1 },
+        "concentration_determination_rule": {
+          "type": "object",
+          "required": ["type", "thresholds", "depends_on"],
+          "properties": {
+            "type": { "type": "string" },
+            "thresholds": { "type": "object" },
+            "depends_on": { "type": "string" }
+          }
+        },
+        "severity_weights": {
+          "type": "object",
+          "required": ["low", "moderate", "high", "critical"],
+          "additionalProperties": false,
+          "properties": {
+            "low": { "type": "integer" }, "moderate": { "type": "integer" },
+            "high": { "type": "integer" }, "critical": { "type": "integer" }
+          }
+        },
+        "impact_weights": {
+          "type": "object",
+          "required": ["criterion", "dimension", "journey", "cross_journey", "system"],
+          "additionalProperties": false,
+          "properties": {
+            "criterion": { "type": "integer" }, "dimension": { "type": "integer" },
+            "journey": { "type": "integer" }, "cross_journey": { "type": "integer" },
+            "system": { "type": "integer" }
+          }
+        },
+        "concentration_weights": {
+          "type": "object",
+          "required": ["isolated", "repeated", "concentrated", "systemic"],
+          "additionalProperties": false,
+          "properties": {
+            "isolated": { "type": "integer" }, "repeated": { "type": "integer" },
+            "concentrated": { "type": "integer" }, "systemic": { "type": "integer" }
+          }
+        },
+        "journey_relevance_weights": {
+          "type": "object",
+          "required": ["low", "moderate", "high", "critical"],
+          "additionalProperties": false,
+          "properties": {
+            "low": { "type": "integer" }, "moderate": { "type": "integer" },
+            "high": { "type": "integer" }, "critical": { "type": "integer" }
+          }
+        },
+        "max_theoretical_score": { "type": "integer", "const": 320 },
+        "usage": { "type": "string" },
+        "depends_on": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "relationship_to_precedence_order": { "type": "string" },
+        "v1_note": { "type": "string" }
+      }
+    },
+
     "criterion": {
       "type": "object",
-      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity"],
+      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity", "impact", "journey_relevance"],
       "additionalProperties": false,
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^(attract|engage|convert|retain)\\.(marketing_strategy|ux_design|brand_identity|systems_integration)\\.[a-z][a-z0-9_]*$",
-          "description": "journey_stage.dimension.slug -- must match the criterion's own journey_stage and dimension fields."
+          "pattern": "^(attract|engage|convert|retain)\\.(marketing_strategy|ux_design|brand_identity|systems_integration)\\.[a-z][a-z0-9_]*$"
         },
-        "journey_stage": {
-          "type": "string",
-          "enum": ["attract", "engage", "convert", "retain"]
-        },
+        "journey_stage": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] },
         "dimension": {
           "type": "string",
           "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"]
@@ -133,7 +489,6 @@
         "question": { "type": "string", "minLength": 1 },
         "response": {
           "type": "object",
-          "description": "Universal Response Model (Design Spec §5). All V1 criteria use the maturity_1_5 scale.",
           "required": ["type", "evidence", "applicability"],
           "additionalProperties": false,
           "properties": {
@@ -153,13 +508,9 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": ["threshold", "match", "conditional", "weighted_sum"],
-                  "description": "cross_reference is deferred beyond V1 (Design Spec §8) and is not a valid value here."
+                  "enum": ["threshold", "match", "conditional", "weighted_sum"]
                 },
-                "bands_ref": {
-                  "type": "string",
-                  "description": "Points at the diagnostic-level maturity_scale (e.g. 'maturity_scale'). Required when type == threshold."
-                }
+                "bands_ref": { "type": "string" }
               },
               "allOf": [
                 {
@@ -175,11 +526,7 @@
           "required": ["finding_ref"],
           "additionalProperties": false,
           "properties": {
-            "finding_ref": {
-              "type": "string",
-              "minLength": 1,
-              "description": "Naming convention per DECISIONS.md: the criterion's own leaf slug."
-            }
+            "finding_ref": { "type": "string", "minLength": 1 }
           }
         },
         "severity": {
@@ -188,10 +535,32 @@
           "additionalProperties": false,
           "properties": {
             "rule": {
-              "description": "Deliberately null in V1 -- see DECISIONS.md 'Still undefined'. Design Spec §11: severity must not be a simple 1:1 function of score.",
-              "type": ["object", "null"]
+              "type": "object",
+              "required": ["ref"],
+              "additionalProperties": false,
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "const": "severity_model.derivation_rule",
+                  "description": "Points at the one shared severity rule rather than repeating it 51 times."
+                }
+              }
             }
           }
+        },
+        "impact": {
+          "description": "Either \"TBD\" (5 criteria flagged for human approval) or one of the five impact levels (46 criteria assigned this round).",
+          "oneOf": [
+            { "const": "TBD" },
+            { "$ref": "#/$defs/impactLevel" }
+          ]
+        },
+        "journey_relevance": {
+          "description": "Either \"TBD\" (current state for all 51 criteria -- structural field only, not assigned this round) or one of the four journey_relevance levels once assigned.",
+          "oneOf": [
+            { "const": "TBD" },
+            { "type": "string", "enum": ["low", "moderate", "high", "critical"] }
+          ]
         }
       }
     }

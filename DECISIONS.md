@@ -1,6 +1,6 @@
 # EverCompass Diagnostic Engine — Decisions Log (v1.2 → v1.2.1)
 
-**Status:** Draft, made by Claude per explicit instruction to resolve documented contradictions and proceed to build the JSON Schema and `diagnostic.json`. These are not yet ratified the way `Architecture v1.2`'s ADR-001–008 were — they should be reviewed by Ivan and either adopted into a formal v1.3 Architecture revision or overridden.
+**Status:** ADR-009 through ADR-015 below were made by Claude per explicit instruction to resolve the two source documents' contradictions, in order to build the JSON Schema and `diagnostic.json`. They are not formally ratified the way `Architecture v1.2`'s ADR-001–008 were — they should be reviewed by Ivan and either adopted into a formal v1.3 Architecture revision or overridden. Separately from this ADR log, every remaining open methodology question these ADRs left as "still undefined" below (finding-generation trigger, severity derivation, aggregation logic, priority formula, criterion impact/journey_relevance) has since been resolved as explicit, later decisions and is now encoded declaratively in `src/definitions/diagnostic.json` (`status: "published"`, v1.0.0) — see that file's own `*_model`/`aggregation`/`priority` sections and this repo's commit history for how. The "Still undefined" list at the bottom of this file is kept as the historical record of what was genuinely open at ADR-009–015's time of writing, not as a statement of current status.
 
 **Sources reconciled:**
 - `Evercompass-diagnostic-engine-architecture-v1_2` (Notion)
@@ -82,26 +82,26 @@ Continuing the ADR numbering from Architecture v1.2 §20 (which ends at ADR-008)
 
 ---
 
-## ADR-015 — Frontend / repo location: not resolved in this pass
+## ADR-015 — Frontend / repo location
 
-**Context:** Both documents assume a Framer frontend calling a separate Python/FastAPI service repo. This repository (`EverJourneys`) is an Astro/TypeScript marketing site, with no Python service, and an existing **static, non-diagnostic** `/evercompass` explainer page.
+**Context:** Both documents assume a Framer frontend calling a separate Python/FastAPI service repo. The diagnostic content and engine were first drafted inside `EverJourneys` (an Astro/TypeScript marketing site with no Python service and an existing **static, non-diagnostic** `/evercompass` explainer page), at repo root, outside `src/`, specifically so they could be lifted into a separate service repo later without restructuring.
 
-**Decision:** Not resolved here. The JSON Schema and `diagnostic.json` built in this pass are plain data — portable to a Framer+FastAPI service, an Astro API route, or any other stack. They're placed at the repo root (`evercompass-diagnostic/`), outside `src/`, specifically so they can be lifted into a separate service repo later without restructuring, or left in place if the engine ends up living here instead.
+**Decision:** Resolved by migration, not by further ADR text: the diagnostic definition, schema, and Assessment Engine now live in their own dedicated repository (`everjourneys-ai/EverCompass-Diagnostic`), separate from the `EverJourneys` Astro site. `src/definitions/diagnostic.json` and `src/engine/` are this repo's canonical content and code — there is no longer a parallel copy at this repo's root (an earlier, pre-migration duplicate of both the definition and its schema existed briefly at `definitions/evercompass/v1/` and `schema/diagnostic.schema.json`; it predated every methodology decision below and has been removed as stale, superseded content).
 
-**Reason:** This decision affects the Application/API layer and hosting, not the diagnostic content itself. Deciding it now would mean guessing at infrastructure that hasn't been asked for.
+**Reason:** Once the Assessment Engine needed to exist as real, runnable Python, keeping it inside an Astro/TypeScript site stopped making sense; a dedicated repo is the natural home for the FastAPI layer this content is meant to be wrapped by next.
 
-**Consequences:** Must be answered explicitly before Assessment Engine / API code (not part of this pass) is written.
+**Consequences:** Frontend/hosting for the eventual FastAPI + Framer stack is still not decided — that remains a genuinely open question, just no longer entangled with "which repo does the diagnostic content live in."
 
 ---
 
-## Still undefined — deliberately not invented
+## Still undefined at ADR-009–015's time of writing — historical record
 
-Per the original instruction not to invent diagnostic rules, weights, thresholds, severity mappings, recommendations, or proprietary decision logic, the following remain explicit, labeled gaps in the artifacts produced here (structurally stubbed as `null`, empty, or omitted — never filled with a guessed value):
+Per the original instruction not to invent diagnostic rules, weights, thresholds, severity mappings, recommendations, or proprietary decision logic, the following were explicit, labeled gaps in the artifacts produced by this ADR log's original pass (structurally stubbed as `null`, empty, or omitted — never filled with a guessed value). **Status as of `diagnostic.json` v1.0.0 (`published`) is annotated per item** — most have since been resolved by later, explicit decisions; two remain genuinely open and still deliberately not invented:
 
-- **Per-criterion severity rule** (`severity.rule`) — Spec §11 explicitly forbids deriving severity as a simple function of score; no alternative rule is given. Left `null` on every criterion.
-- **Dimension/Journey/Priority aggregation logic** (`aggregation.dimension`, `.journey`, `.priority`) — Spec §13 calls this "proprietary diagnostic logic," explicitly undefined. Left `null`.
-- **Finding-generation trigger logic** — what score/condition/pattern actually creates a finding, and of which type (`issue`/`opportunity`/`strength`). Not present in either document beyond the concept.
-- **Priority precedence formula** — Spec §17 gives an ordered list of qualitative signals, not a scoring function or cutoffs.
-- **Relationship/pattern map** — which criterion groupings form a "pattern" (Spec §15 gives two illustrative examples, not an exhaustive map) or count as an `explicit_relationship` for root-cause status (§18).
-- **Recommendation copy** (`recommendations.json`) — does not exist in either document.
-- **`finding_ref` naming convention** — Spec §23's one worked example uses `"audience_definition"` for the `audience` criterion (a `_definition` suffix), not just `"audience"`. Since only one example exists and it's a reference name rather than a scoring rule, `diagnostic.json` here standardizes on the criterion's own leaf slug (e.g. `"audience"`) for all 51 criteria, for consistency. This is a naming-convention choice, not business logic — flagging it in case the original suffix style was intentional and should be matched instead.
+- **Per-criterion severity rule** (`severity.rule`) — Spec §11 explicitly forbids deriving severity as a simple function of score; no alternative rule was given at the time. **Resolved:** `severity_model.derivation_rule` is a `classification_impact_matrix` (classification × `criteria[*].impact`), assigned for all 51 criteria.
+- **Dimension/Journey/Priority aggregation logic** (`aggregation.dimension`, `.journey`, `.priority`) — Spec §13 calls this "proprietary diagnostic logic," explicitly undefined at the time. **Resolved:** `aggregation.dimension.method`/`aggregation.journey.method` are six-tier `condition_rules` (critical, high, moderate, developing, operationalized, strong); `priority.scoring_formula` is a `weighted_product`.
+- **Finding-generation trigger logic** — what score/condition/pattern actually creates a finding, and of which type (`issue`/`opportunity`/`strength`). **Resolved:** `finding_model.generation_rule` is a `classification_mapping` (needs_attention/developing → issue, strong/operationalized → strength; `opportunity` is schema-supported but never produced by this mapping — see the mapping's own `opportunity_note`).
+- **Priority precedence formula** — Spec §17 gives an ordered list of qualitative signals, not a scoring function or cutoffs. **Resolved for the ordering `generate_priorities()` actually uses:** `priority_score = severity_weight × impact_weight × concentration_weight × journey_relevance_weight`, read from `priority.scoring_formula`. (Spec §17's original qualitative precedence rule is also fully implemented, as `order_priorities()` — see `ENGINE_STATUS.md`'s "Known internal inconsistency" note for why two orderings coexist.)
+- **Relationship/pattern map** — which criterion groupings form a "pattern" (Spec §15 gives two illustrative examples, not an exhaustive map) or count as an `explicit_relationship` for root-cause status (§18). **Still open, deliberately deferred, not invented:** `src/engine/concentration.py` fixes concentration at `"isolated"` for every finding in v1.0 rather than guess at a grouping rule neither source document specifies.
+- **Recommendation copy** (`recommendations.json`) — does not exist in either document. **Still open** — out of scope for the deterministic engine.
+- **`finding_ref` naming convention** — Spec §23's one worked example uses `"audience_definition"` for the `audience` criterion (a `_definition` suffix), not just `"audience"`. Since only one example exists and it's a reference name rather than a scoring rule, `diagnostic.json` standardizes on the criterion's own leaf slug (e.g. `"audience"`) for all 51 criteria, for consistency. This is a naming-convention choice, not business logic, and was never revisited — flagging it here still, in case the original suffix style was intentional and should be matched instead.

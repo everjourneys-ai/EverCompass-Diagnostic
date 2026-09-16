@@ -316,7 +316,7 @@
     "assessment_id": "asm_full_multiple_high_findings",
     "diagnostic_id": "evercompass",
     "diagnostic_version": "1.0.0",
-    "engine_version": "0.1.0",
+    "engine_version": "0.2.0",
     "criterion_results": [
       {
         "criterion_id": "attract.marketing_strategy.audience",
