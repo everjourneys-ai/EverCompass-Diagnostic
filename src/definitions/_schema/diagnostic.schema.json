@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://everjourneys.ai/schemas/evercompass/src-diagnostic.schema.json",
+  "title": "EverCompass Diagnostic Definition (src/definitions/diagnostic.json)",
+  "description": "Validates the diagnostic definition actually consumed by src/engine. Five fields are allowed to be the literal string \"TBD\" OR a future-defined object (see the tbdOrRule/tbdOrMethod/tbdOrFormula defs below) so that filling in the real EverCompass methodology later is a value change, not a schema or engine restructuring: severity_model.derivation_rule, finding_model.generation_rule, aggregation.dimension.method, aggregation.journey.method, priority.scoring_formula. The object branch is intentionally unconstrained -- this schema does not predict or encode what that future rule will look like, since doing so would itself be inventing structure for proprietary logic that hasn't been decided yet.",
+  "type": "object",
+  "required": [
+    "diagnostic_id", "name", "version", "status",
+    "journey_stages", "dimensions",
+    "response_model", "applicability_model", "classification_model",
+    "severity_model", "finding_model", "rule_types",
+    "aggregation", "priority", "criteria"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "diagnostic_id": { "type": "string", "const": "evercompass" },
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "status": { "type": "string", "enum": ["draft", "published", "deprecated"] },
+
+    "journey_stages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/labeledEnumEntry" },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "dimensions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/labeledEnumEntry" },
+      "minItems": 4,
+      "maxItems": 4
+    },
+
+    "response_model": {
+      "type": "object",
+      "required": ["type", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "const": "maturity_1_5" },
+        "fields": {
+          "type": "object",
+          "required": ["criterion_id", "value", "evidence", "applicability"],
+          "additionalProperties": false,
+          "properties": {
+            "criterion_id": { "$ref": "#/$defs/fieldSpec" },
+            "value": { "$ref": "#/$defs/fieldSpec" },
+            "evidence": { "$ref": "#/$defs/fieldSpec" },
+            "applicability": { "$ref": "#/$defs/fieldSpec" }
+          }
+        }
+      }
+    },
+
+    "applicability_model": {
+      "type": "object",
+      "required": ["values", "effect_of_not_applicable"],
+      "additionalProperties": false,
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["applicable", "not_applicable"] },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "effect_of_not_applicable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "score": { "const": null },
+            "classification": { "const": null },
+            "finding": { "const": null },
+            "severity": { "const": null }
+          }
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "classification_model": {
+      "type": "object",
+      "required": ["scale", "bands"],
+      "additionalProperties": false,
+      "properties": {
+        "scale": { "type": "string", "const": "maturity_1_5" },
+        "bands": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/maturityBand" },
+          "minItems": 5,
+          "maxItems": 5
+        }
+      }
+    },
+
+    "severity_model": {
+      "type": "object",
+      "required": ["levels", "derivation_rule"],
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/idMeaningEntry" },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "derivation_rule": { "$ref": "#/$defs/tbdOrRule" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "finding_model": {
+      "type": "object",
+      "required": ["types", "fields", "generation_rule"],
+      "additionalProperties": false,
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "fields": {
+          "type": "object",
+          "required": ["finding_id", "criterion_id", "journey_stage", "dimension", "type", "severity"],
+          "additionalProperties": false,
+          "properties": {
+            "finding_id": { "$ref": "#/$defs/fieldSpec" },
+            "criterion_id": { "$ref": "#/$defs/fieldSpec" },
+            "journey_stage": { "$ref": "#/$defs/fieldSpec" },
+            "dimension": { "$ref": "#/$defs/fieldSpec" },
+            "type": { "$ref": "#/$defs/fieldSpec" },
+            "severity": { "$ref": "#/$defs/fieldSpec" }
+          }
+        },
+        "generation_rule": { "$ref": "#/$defs/tbdOrRule" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "rule_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "description", "v1_usage"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["threshold", "match", "conditional", "weighted_sum", "cross_reference"]
+          },
+          "description": { "type": "string", "minLength": 1 },
+          "v1_usage": { "type": "string", "minLength": 1 }
+        }
+      },
+      "minItems": 5,
+      "maxItems": 5
+    },
+
+    "aggregation": {
+      "type": "object",
+      "required": ["dimension", "journey", "overall_score", "overall_score_note"],
+      "additionalProperties": false,
+      "properties": {
+        "dimension": { "$ref": "#/$defs/aggregationMethod" },
+        "journey": { "$ref": "#/$defs/aggregationMethod" },
+        "overall_score": {
+          "const": null,
+          "description": "Settled, not TBD: ADR-009 -- V1 has no overall score, ever."
+        },
+        "overall_score_note": { "type": "string" }
+      }
+    },
+
+    "priority": {
+      "type": "object",
+      "required": [
+        "included_in_v1", "signals", "precedence_order", "tie_breakers",
+        "scoring_formula", "root_cause_statuses"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "included_in_v1": { "type": "boolean" },
+        "signals": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "precedence_order": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "tie_breakers": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "scoring_formula": { "$ref": "#/$defs/tbdOrRule" },
+        "root_cause_statuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["none_identified", "explicit_relationship", "potential_relationship"]
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "note": { "type": "string" }
+      }
+    },
+
+    "criteria": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/criterion" },
+      "minItems": 1
+    }
+  },
+
+  "$defs": {
+    "labeledEnumEntry": {
+      "type": "object",
+      "required": ["id", "label", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "idMeaningEntry": {
+      "type": "object",
+      "required": ["id", "meaning"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "meaning": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "fieldSpec": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {},
+        "required": { "type": "boolean" },
+        "range": { "type": "array" },
+        "description": { "type": "string" },
+        "enum": { "type": "array" }
+      }
+    },
+
+    "maturityBand": {
+      "type": "object",
+      "required": ["score", "classification", "meaning"],
+      "additionalProperties": false,
+      "properties": {
+        "score": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "classification": {
+          "type": "string",
+          "enum": ["needs_attention", "developing", "strong", "operationalized"]
+        },
+        "meaning": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "aggregationMethod": {
+      "type": "object",
+      "required": ["method", "preserves", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "method": { "$ref": "#/$defs/tbdOrRule" },
+        "preserves": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "note": { "type": "string" }
+      }
+    },
+
+    "tbdOrRule": {
+      "description": "Either the literal string \"TBD\" (current state for all five undefined decisions) or, once the methodology owner defines the real rule, an object. Deliberately unconstrained as an object -- this schema does not predict the future rule's shape.",
+      "oneOf": [
+        { "const": "TBD" },
+        { "type": "object" }
+      ]
+    },
+
+    "criterion": {
+      "type": "object",
+      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(attract|engage|convert|retain)\\.(marketing_strategy|ux_design|brand_identity|systems_integration)\\.[a-z][a-z0-9_]*$"
+        },
+        "journey_stage": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] },
+        "dimension": {
+          "type": "string",
+          "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"]
+        },
+        "question": { "type": "string", "minLength": 1 },
+        "response": {
+          "type": "object",
+          "required": ["type", "evidence", "applicability"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "const": "maturity_1_5" },
+            "evidence": { "type": "boolean", "const": true },
+            "applicability": { "type": "boolean", "const": true }
+          }
+        },
+        "evaluation": {
+          "type": "object",
+          "required": ["rule"],
+          "additionalProperties": false,
+          "properties": {
+            "rule": {
+              "type": "object",
+              "required": ["type"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["threshold", "match", "conditional", "weighted_sum"]
+                },
+                "bands_ref": { "type": "string" }
+              },
+              "allOf": [
+                {
+                  "if": { "properties": { "type": { "const": "threshold" } } },
+                  "then": { "required": ["bands_ref"] }
+                }
+              ]
+            }
+          }
+        },
+        "finding": {
+          "type": "object",
+          "required": ["finding_ref"],
+          "additionalProperties": false,
+          "properties": {
+            "finding_ref": { "type": "string", "minLength": 1 }
+          }
+        },
+        "severity": {
+          "type": "object",
+          "required": ["rule"],
+          "additionalProperties": false,
+          "properties": {
+            "rule": {
+              "type": "object",
+              "required": ["ref"],
+              "additionalProperties": false,
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "const": "severity_model.derivation_rule",
+                  "description": "Points at the one shared, currently-TBD severity rule rather than repeating 'TBD' 51 times."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
