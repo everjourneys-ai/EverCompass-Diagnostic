@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://everjourneys.ai/schemas/evercompass/diagnostic.schema.json",
+  "title": "EverCompass Diagnostic Definition",
+  "description": "Structural schema for a versioned EverCompass diagnostic definition. Per DECISIONS.md ADR-009/010/011, there is no per-criterion weight and no overall-score field anywhere in this schema. Fields called out in DECISIONS.md as 'still undefined' (severity.rule, aggregation.*) are typed to allow null rather than given invented content.",
+  "type": "object",
+  "required": [
+    "diagnostic_id",
+    "name",
+    "version",
+    "status",
+    "journey_stages",
+    "dimensions",
+    "maturity_scale",
+    "severity_levels",
+    "criteria",
+    "aggregation"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "diagnostic_id": {
+      "type": "string",
+      "const": "evercompass"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver-ish diagnostic content version (Architecture v1.2 ADR-006). Immutable once status is 'published'."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "published", "deprecated"]
+    },
+    "journey_stages": {
+      "type": "array",
+      "description": "The four Customer Journey stages, in order (Design Spec §2.1).",
+      "items": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] },
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true
+    },
+    "dimensions": {
+      "type": "array",
+      "description": "The four Lenses/pillars (Design Spec §2.2). 'brand_identity' per DECISIONS.md ADR-013.",
+      "items": {
+        "type": "string",
+        "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"]
+      },
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true
+    },
+    "maturity_scale": {
+      "type": "array",
+      "description": "The Maturity Model (Design Spec §6), transcribed verbatim. Uniform across all criteria using response.type == maturity_1_5 -- referenced by each criterion's evaluation.rule.bands_ref rather than repeated 51 times.",
+      "items": { "$ref": "#/$defs/maturityBand" },
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "severity_levels": {
+      "type": "object",
+      "description": "Severity level definitions (Design Spec §11), transcribed verbatim. This defines what each level MEANS -- it does not say which criterion/condition maps to which level; that mapping is undefined (see DECISIONS.md).",
+      "required": ["low", "moderate", "high", "critical"],
+      "additionalProperties": false,
+      "properties": {
+        "low": { "$ref": "#/$defs/severityLevel" },
+        "moderate": { "$ref": "#/$defs/severityLevel" },
+        "high": { "$ref": "#/$defs/severityLevel" },
+        "critical": { "$ref": "#/$defs/severityLevel" }
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "description": "The 51 diagnostic criteria (Design Spec §4).",
+      "items": { "$ref": "#/$defs/criterion" },
+      "minItems": 1
+    },
+    "aggregation": {
+      "description": "Dimension/journey/priority aggregation logic. Deliberately null in V1 -- Design Spec §13 calls this 'proprietary diagnostic logic' and does not define it; not invented here (see DECISIONS.md, ADR-011, 'Still undefined').",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dimension": { "type": ["object", "null"] },
+        "journey": { "type": ["object", "null"] },
+        "priority": { "type": ["object", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "maturityBand": {
+      "type": "object",
+      "required": ["score", "classification", "meaning"],
+      "additionalProperties": false,
+      "properties": {
+        "score": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "classification": {
+          "type": "string",
+          "enum": ["needs_attention", "developing", "strong", "operationalized"]
+        },
+        "meaning": { "type": "string", "minLength": 1 }
+      }
+    },
+    "severityLevel": {
+      "type": "object",
+      "required": ["meaning"],
+      "additionalProperties": false,
+      "properties": {
+        "meaning": { "type": "string", "minLength": 1 }
+      }
+    },
+    "criterion": {
+      "type": "object",
+      "required": ["id", "journey_stage", "dimension", "question", "response", "evaluation", "finding", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(attract|engage|convert|retain)\\.(marketing_strategy|ux_design|brand_identity|systems_integration)\\.[a-z][a-z0-9_]*$",
+          "description": "journey_stage.dimension.slug -- must match the criterion's own journey_stage and dimension fields."
+        },
+        "journey_stage": {
+          "type": "string",
+          "enum": ["attract", "engage", "convert", "retain"]
+        },
+        "dimension": {
+          "type": "string",
+          "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"]
+        },
+        "question": { "type": "string", "minLength": 1 },
+        "response": {
+          "type": "object",
+          "description": "Universal Response Model (Design Spec §5). All V1 criteria use the maturity_1_5 scale.",
+          "required": ["type", "evidence", "applicability"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "const": "maturity_1_5" },
+            "evidence": { "type": "boolean", "const": true },
+            "applicability": { "type": "boolean", "const": true }
+          }
+        },
+        "evaluation": {
+          "type": "object",
+          "required": ["rule"],
+          "additionalProperties": false,
+          "properties": {
+            "rule": {
+              "type": "object",
+              "required": ["type"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["threshold", "match", "conditional", "weighted_sum"],
+                  "description": "cross_reference is deferred beyond V1 (Design Spec §8) and is not a valid value here."
+                },
+                "bands_ref": {
+                  "type": "string",
+                  "description": "Points at the diagnostic-level maturity_scale (e.g. 'maturity_scale'). Required when type == threshold."
+                }
+              },
+              "allOf": [
+                {
+                  "if": { "properties": { "type": { "const": "threshold" } } },
+                  "then": { "required": ["bands_ref"] }
+                }
+              ]
+            }
+          }
+        },
+        "finding": {
+          "type": "object",
+          "required": ["finding_ref"],
+          "additionalProperties": false,
+          "properties": {
+            "finding_ref": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Naming convention per DECISIONS.md: the criterion's own leaf slug."
+            }
+          }
+        },
+        "severity": {
+          "type": "object",
+          "required": ["rule"],
+          "additionalProperties": false,
+          "properties": {
+            "rule": {
+              "description": "Deliberately null in V1 -- see DECISIONS.md 'Still undefined'. Design Spec §11: severity must not be a simple 1:1 function of score.",
+              "type": ["object", "null"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://everjourneys.ai/schemas/evercompass/result.schema.json",
+  "title": "EverCompass Assessment Result",
+  "description": "The deterministic Structured Assessment Result (Design Spec §19), revised per DECISIONS.md ADR-009: no overall_score and no single top-level classification anywhere in this document -- the model is Journey + Lens + Findings + Priorities, not a reduced number.",
+  "type": "object",
+  "required": [
+    "assessment_id",
+    "diagnostic_id",
+    "diagnostic_version",
+    "engine_version",
+    "criterion_results",
+    "findings",
+    "dimensions",
+    "journey_stages",
+    "priorities",
+    "system_summary"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "assessment_id": { "type": "string" },
+    "diagnostic_id": { "type": "string", "const": "evercompass" },
+    "diagnostic_version": { "type": "string" },
+    "engine_version": {
+      "type": "string",
+      "description": "Tracked independently of diagnostic_version (Architecture v1.2 ADR-006)."
+    },
+    "criterion_results": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/criterionResult" }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "dimensions": {
+      "type": "object",
+      "required": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"],
+      "additionalProperties": false,
+      "properties": {
+        "marketing_strategy": { "$ref": "#/$defs/aggregateResult" },
+        "ux_design": { "$ref": "#/$defs/aggregateResult" },
+        "brand_identity": { "$ref": "#/$defs/aggregateResult" },
+        "systems_integration": { "$ref": "#/$defs/aggregateResult" }
+      }
+    },
+    "journey_stages": {
+      "type": "object",
+      "required": ["attract", "engage", "convert", "retain"],
+      "additionalProperties": false,
+      "properties": {
+        "attract": { "$ref": "#/$defs/aggregateResult" },
+        "engage": { "$ref": "#/$defs/aggregateResult" },
+        "convert": { "$ref": "#/$defs/aggregateResult" },
+        "retain": { "$ref": "#/$defs/aggregateResult" }
+      }
+    },
+    "priorities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/priority" }
+    },
+    "system_summary": { "$ref": "#/$defs/systemSummary" }
+  },
+  "$defs": {
+    "criterionResult": {
+      "type": "object",
+      "description": "Design Spec §9, revised per DECISIONS.md ADR-010: score is a graded 1-5 (or null), not a pass/fail boolean.",
+      "required": ["criterion_id", "journey_stage", "dimension", "score", "classification", "finding_id"],
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": { "type": "string" },
+        "journey_stage": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] },
+        "dimension": { "type": "string", "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"] },
+        "score": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "classification": {
+          "type": ["string", "null"],
+          "enum": ["needs_attention", "developing", "strong", "operationalized", null]
+        },
+        "finding_id": { "type": ["string", "null"] }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "description": "Design Spec §10.",
+      "required": ["finding_id", "criterion_id", "journey_stage", "dimension", "type", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "finding_id": { "type": "string" },
+        "criterion_id": { "type": "string" },
+        "journey_stage": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] },
+        "dimension": { "type": "string", "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"] },
+        "type": { "type": "string", "enum": ["issue", "opportunity", "strength"] },
+        "severity": {
+          "type": ["string", "null"],
+          "enum": ["low", "moderate", "high", "critical", null]
+        }
+      }
+    },
+    "aggregateResult": {
+      "type": "object",
+      "description": "Design Spec §13/§14: 'not a simple average'. Preserves criterion results, findings, and a classification distribution -- never a single reduced score (ADR-009).",
+      "required": ["criteria", "findings", "summary"],
+      "additionalProperties": false,
+      "properties": {
+        "criteria": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "criterion_ids belonging to this dimension/journey stage."
+        },
+        "findings": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "finding_ids belonging to this dimension/journey stage."
+        },
+        "summary": {
+          "type": "object",
+          "required": ["classification_distribution"],
+          "additionalProperties": false,
+          "properties": {
+            "classification_distribution": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "needs_attention": { "type": "integer", "minimum": 0 },
+                "developing": { "type": "integer", "minimum": 0 },
+                "strong": { "type": "integer", "minimum": 0 },
+                "operationalized": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "priority": {
+      "type": "object",
+      "description": "Design Spec §16.",
+      "required": ["priority_id", "title", "supporting_findings", "journey_stages", "dimensions"],
+      "additionalProperties": false,
+      "properties": {
+        "priority_id": { "type": "string" },
+        "title": { "type": "string" },
+        "supporting_findings": { "type": "array", "items": { "type": "string" } },
+        "journey_stages": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] }
+        },
+        "dimensions": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"] }
+        }
+      }
+    },
+    "systemSummary": {
+      "type": "object",
+      "description": "Design Spec §21.",
+      "required": ["criteria_total", "criteria_applicable", "criteria_not_applicable", "findings_total", "severity", "priority_count", "journeys_requiring_attention", "dimensions_requiring_attention"],
+      "additionalProperties": false,
+      "properties": {
+        "criteria_total": { "type": "integer", "minimum": 0 },
+        "criteria_applicable": { "type": "integer", "minimum": 0 },
+        "criteria_not_applicable": { "type": "integer", "minimum": 0 },
+        "findings_total": { "type": "integer", "minimum": 0 },
+        "severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "critical": { "type": "integer", "minimum": 0 },
+            "high": { "type": "integer", "minimum": 0 },
+            "moderate": { "type": "integer", "minimum": 0 },
+            "low": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "priority_count": { "type": "integer", "minimum": 0 },
+        "journeys_requiring_attention": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["attract", "engage", "convert", "retain"] }
+        },
+        "dimensions_requiring_attention": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["marketing_strategy", "ux_design", "brand_identity", "systems_integration"] }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://everjourneys.ai/schemas/evercompass/response.schema.json",
+  "title": "EverCompass Universal Response",
+  "description": "One respondent answer to one criterion (Design Spec §5, §7). An /assess request body is an array of these.",
+  "type": "object",
+  "required": ["criterion_id", "value", "evidence", "applicability"],
+  "additionalProperties": false,
+  "properties": {
+    "criterion_id": {
+      "type": "string",
+      "description": "Must match a criterion.id in the pinned diagnostic_version's definition."
+    },
+    "value": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "maximum": 5,
+      "description": "1-5 maturity value, or null when applicability is not_applicable (Design Spec §7)."
+    },
+    "evidence": {
+      "type": "string",
+      "description": "Supporting explanation. Separate from the score; never reinterpreted by the deterministic engine (Design Spec §5)."
+    },
+    "applicability": {
+      "type": "string",
+      "enum": ["applicable", "not_applicable"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "applicability": { "const": "not_applicable" } },
+        "required": ["applicability"]
+      },
+      "then": {
+        "properties": { "value": { "const": null } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "applicability": { "const": "applicable" } },
+        "required": ["applicability"]
+      },
+      "then": {
+        "properties": { "value": { "type": "integer", "minimum": 1, "maximum": 5 } }
+      }
+    }
+  ]
+}
